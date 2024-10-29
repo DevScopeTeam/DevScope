@@ -14,5 +14,12 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  css: {
+    preprocessorOptions: { // css预处理器
+      scss: { 
+        additionalData: '@import "@/assets/style/shared.scss";' // 引入使得在全局使用shared.scss的共享样式
+      }
+    }
   }
 })
