@@ -8,7 +8,6 @@ import router from './router'
 
 import ElementPlus from 'element-plus' // import elementPlus
 import 'element-plus/dist/index.css' // import elementPlus
-// import './assets/index.scss'// import fonts
 
 const app = createApp(App)
 
