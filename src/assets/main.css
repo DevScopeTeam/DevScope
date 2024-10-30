@@ -1,4 +1,5 @@
 @import './base.css';
+@import "./font.scss";
 
 /* global style */
 #app {
