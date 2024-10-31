@@ -45,7 +45,7 @@ const routes = [
       title: 'List',
       level: 1
     }
-  },
+  }
 ]
 
 const router = createRouter({

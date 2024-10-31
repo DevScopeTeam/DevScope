@@ -1,49 +1,86 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-// import HelloWorld from './components/HelloWorld.vue'
-import TitleLogo from './components/TitleLogo.vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute() // 使用路由
+
+// 是否显示status bar
+const isHome = computed(() => {
+  let res = null
+  if (route.path === '/home') { // 首页不显示
+    res = false
+  } else { // 其余显示
+    res = true
+  }
+  return res
+})
+
 </script>
 
 <template>
-  <div class="outer_box">
-    <TitleLogo class="title"/>
-  </div>
-  
+  <div>
+    <!--顶部状态栏-->
+    <div class="status_bar" v-show="isHome">
+      
+    </div>
 
-  <!-- <RouterView /> -->
+    <!--路由-->
+    <div :class="isHome ? 'router_view' : 'router_view_home'">
+      <RouterView></RouterView>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
-.outer_box{
+.status_bar{
+  width: 100%;
+  height: 54px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 99999; // 置于最顶层
+
+  background: #e1e1e1;
+}
+
+.router_view{
+  width: 100%;
+  height: calc(100% - 54px);
+
+  position: absolute;
+  top: 54px;
+  left: 0;
+  right: 0;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.router_view_home{
   width: 100%;
   height: 100%;
 
-  // 子元素垂直水平居中
-  position: relative;
+  position: absolute;
+  top: 0px;
+  left: 0;
+  right: 0;
 
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-
-  .title{
-    width: 100%;
-    height: 100%;
-
-    // 居中
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-
-    font-family: TsangerYuYangT_W05_W05;
-    font-size: 60px;
-    color: rgb(85, 158, 237);
-    font-style: italic;
-    letter-spacing: 3px;
-  }
 }
+
+
 
 
 // header {
