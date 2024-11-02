@@ -1,29 +1,166 @@
 <script setup lang="ts">
+import { onBeforeMount, reactive } from 'vue'
+import { useRoute } from 'vue-router'
+import { ElSkeleton, ElSkeletonItem } from 'element-plus'
 import { useSearchStore } from '@/stores/searchStore'
-import TitleLogo from '@/components/TitleLogo.vue'
-import Switch from '@/components/Switch.vue'
-import SearchBar from '@/components/SearchBar.vue'
+import { useUserStore } from '@/stores/userStore'
+import position from '@/assets/image/position.png'
+import company from '@/assets/image/company.png'
+import url from '@/assets/image/url.png'
+import blog from '@/assets/image/blog.png'
+import email from '@/assets/image/email.png'
 
-/* 实现父子组件通信(搜索模式切换) */
-const userStore = useSearchStore() // 使用pinia的数据
+const route = useRoute() // 使用路由
 
-const changeSearchMode = async () => {
-  await userStore.changeSearchMode()
-  console.log('current mode value: ' + userStore.state.mode)
-}
+/* 使用pinia的数据，实现父子组件通信 */
+const userStore = useUserStore()
+const searchStore = useSearchStore()
+
+const state = reactive({
+  userList: [] as string[], // 用户信息列表
+  isLoading: true // 是否加载中
+})
+
+onBeforeMount(() => {
+  state.userList = userStore.getUserList()
+  state.isLoading = true
+  console.log('loading', state.isLoading)
+  state.isLoading = false // 测试
+})
+
 </script>
 
 <template>
   <div class="outer_box">
-    <!-- title -->
-    <TitleLogo class="title"/>
-    
-    <!-- 搜索框 -->
-    <div class="search_box">
-      <!-- 切换搜索模式 -->
-      <Switch class="switch" @click="changeSearchMode"/>
-      <!-- 搜索区域 -->
-      <SearchBar class="search_bar" />
+    <!-- 列表(按领域搜索时显示) -->
+    <!-- <div class="list_box" v-show="searchStore.getSearchMode()"> -->
+    <div class="list_box">
+      <div class="list_title">
+        TalentRank
+      </div>
+      <div class="list_content" v-for="(item, index) in state.userList" :key="index" :label="item" :value="item">
+        <!-- {{ (JSON.parse(item)).username }} 要修改 -->
+      </div>
+    </div>
+
+    <!-- 主体内容 -->
+    <div class="body_box">
+      <div v-if="state.isLoading === false">
+        <!-- info -->
+        <div class="info_box" v-for="(item, index) in state.userList" :key="index" :label="item" :value="item">
+          
+          <div class="base_info">
+            <div class="amatar_box">
+              <img class="avatar" :src="(JSON.parse(item)).avatar_url" alt=""/>
+            </div>
+            <div class="name_box">
+              <div class="name">{{ (JSON.parse(item)).name }}</div>
+              <div class="login">{{ (JSON.parse(item)).login }}</div>
+            </div>
+          </div>
+
+          <div class="company_info">
+            <div class="group_box">
+              <img class="icon" :src="position" alt=""/>
+              <el-tooltip :content="(JSON.parse(item)).position" placement="bottom" effect="light">
+                <div class="position">{{ (JSON.parse(item)).position }}</div>
+              </el-tooltip>
+              <el-tooltip :content="(JSON.parse(item)).location" placement="bottom" effect="light">
+                <div class="location">{{ (JSON.parse(item)).location }}</div>
+              </el-tooltip>
+            </div>
+            <div class="group_box">
+              <img class="icon" :src="company" alt=""/>
+              <el-tooltip :content="(JSON.parse(item)).company" placement="bottom" effect="light">
+                <div class="company">{{ (JSON.parse(item)).company }}</div>
+              </el-tooltip>
+            </div>
+          </div>
+
+          <div class="link_info">
+            <div class="group_box">
+              <img class="icon" :src="url" alt=""/>
+              <el-tooltip :content="(JSON.parse(item)).url" placement="bottom" effect="light">
+                <div class="url">{{ (JSON.parse(item)).url }}</div>
+              </el-tooltip>
+            </div>
+            <div class="group_box">
+              <img class="icon" :src="blog" alt=""/>
+              <el-tooltip :content="(JSON.parse(item)).blog" placement="bottom" effect="light">
+                <div class="blog">{{ (JSON.parse(item)).blog }}</div>
+              </el-tooltip>
+            </div>
+          </div>
+
+          <div class="email_info">
+            <div class="group_box">
+              <img class="icon" :src="email" alt=""/>
+              <el-tooltip :content="(JSON.parse(item)).email" placement="bottom" effect="light">
+                <div class="email">{{ (JSON.parse(item)).email }}</div>
+              </el-tooltip>
+            </div>
+          </div>
+
+          <div class="bio_info">
+            <el-input class="bio" type="textarea" :rows="3" v-model="(JSON.parse(item)).bio"></el-input>
+          </div>
+        </div>
+
+        <!-- talentRank -->
+        <div class="rank_box">
+          
+        </div>
+      </div>
+
+      <!-- skeleton -->
+      <div v-else>
+        <el-skeleton style="width: 90%;height: auto;display: flex;flex-direction: column;justify-content: center;" animated>
+          <template slot="template">
+            <div class="base_info">
+              <div class="amatar_box">
+                <el-skeleton-item variant="image" style="width: 80%;height: 80%;" class="avatar"/>
+              </div>
+              <div class="name_box">
+                <el-skeleton-item variant="text" class="name" />
+                <el-skeleton-item variant="text" class="login" />
+              </div>
+            </div>
+
+            <div class="company_info">
+              <div class="group_box">
+                <el-skeleton-item variant="image" class="icon"/>
+                <el-skeleton-item variant="text" class="position" />
+                <el-skeleton-item variant="text" class="location" />
+              </div>
+              <div class="group_box">
+                <el-skeleton-item variant="image" class="icon"/>
+                <el-skeleton-item variant="text" class="company" />
+              </div>
+            </div>
+
+            <div class="link_info">
+              <div class="group_box">
+                <el-skeleton-item variant="image" class="icon"/>
+                <el-skeleton-item variant="text" class="url" />
+              </div>
+              <div class="group_box">
+                <el-skeleton-item variant="image" class="icon"/>
+                <el-skeleton-item variant="text" class="blog" />
+              </div>
+            </div>
+
+            <div class="email_info">
+              <div class="group_box">
+                <el-skeleton-item variant="text" class="email" />
+              </div>
+            </div>
+
+            <div class="bio_info">
+              <el-skeleton-item variant="text" class="bio" />
+            </div>
+          </template>
+        </el-skeleton>
+      </div>
     </div>
   </div>
 </template>
@@ -33,44 +170,426 @@ const changeSearchMode = async () => {
   width: 100%;
   height: 100%;
 
+  padding: 54px 20px 25px 20px;
+
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
 
-  .title{
-    width: 60%;
-    height: 100px;
+  .list_box{
+    width: 20%;
+    height: auto;
 
-    font-family: TsangerYuYangT_W05_W05;
-    font-size: 60px;
-    color: rgb(85, 158, 237);
-    font-style: italic;
-    letter-spacing: 3px;
-  }
-  
-  .search_box{
-    width: 60%;
-    height: 70px;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 3px 3px 8px #dcdcdc;
 
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 
-    .switch{
-      width: 80px;
-      height: 100%;
-    }
+    margin-right: 10px;
 
-    .search_bar{
-      width: calc(100% - 80px);
-      height: 100%;
+    .list_title{
+      width: 100%;
+      height: 50px;
 
+      background-image: url('@/assets/image/list_title_blue.png');
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+      border-radius: 6px 6px 0 0;
+      box-shadow: 1px 2px #dcdcdc;
+
+      font-family: Oraqle-Script-2;
+      letter-spacing: 3px;
+      font-size: 34px;
+      
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
+    }
+
+    .list_content{
+      width: 100%;
+      height: 40px;
+
+      // background-image: url('@/assets/image/list_title_blue.png');
+      // background-repeat: no-repeat;
+      // background-size: 100% 100%;
+      border-radius: 0 0 6px 6px;
+      box-shadow: 1px 2px #dcdcdc;
+      
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  .body_box{
+    width: 60%;
+    height: 100%;
+
+    padding: 20px;
+    margin-left: 10px;
+    // background-image: url('@/assets/image/list_title_blue.png');
+    // background-repeat: no-repeat;
+    // background-size: 100% 100%;
+    border-radius: 10px;
+    box-shadow: 2px 2px 6px #dcdcdc;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .info_box{
+      width: 100%;
+      height: auto;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      
+      .base_info{
+        width: 100%;
+        height: auto;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-end;
+
+        padding: 10px;
+
+        .amatar_box{
+          width: 30%;
+          height: 100%;
+
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          
+          .avatar{
+            width: 80%;
+            height: 80%;
+
+            border-radius: 50%;
+            box-shadow: 2px 2px 6px #dcdcdc;
+          }
+        }
+
+        .name_box{
+          width: 70%;
+          height: 100%;
+
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          .name{
+            width: 100%;
+            height: auto;
+
+            text-align: left;
+            padding-left: 20px;
+            font-size: 40px;
+            letter-spacing: 1px;
+            font-family: TsangerYuYangT_W05_W05;
+          }
+
+          .login{
+            width: 100%;
+            height: auto;
+
+            text-align: left;
+            padding-left: 20px;
+            font-size: 20px;
+            letter-spacing: 1px;
+            font-family: TsangerYuYangT_W02_W02;
+          }
+        }
+      }
+
+      // 居中与非居中的划分
+      .company_info, .link_info{
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .email_info{
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+
+        margin-left: 10px;
+      }
+
+      .company_info, .link_info, .email_info{
+        width: 100%;
+        height: 100%;
+
+        padding: 10px;
+
+        .group_box{
+          width: 48%;
+          height: 100%;
+
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+          align-items: center;
+          
+          box-shadow: 2px 2px 6px #dcdcdc;
+          border-radius: 10px;
+          margin: 5px;
+          padding: 5px;
+
+          .icon{
+            width: 20px;
+            height: 20px;
+
+            margin-right: 5px;
+          }
+
+          // 以下为各个文字组件的样式
+          .position, .location, .company, .url, .blog, .email{
+            font-family: DingTalk_JinBuTi_Regular;
+            
+            // 溢出隐藏
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .position{
+            width: 30%;
+            height: 100%;
+
+            text-align: left;
+          }
+
+          .location{
+            width: 50%;
+            height: 100%;
+
+            margin-left: 5px;
+            text-align: left;
+          }
+
+          .company, .url, .blog, .email{
+            width: 90%;
+            height: 100%;
+
+            text-align: left;
+          }
+        }
+      }
+
+      .bio_info{
+        width: 95%;
+        height: 100%;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+
+        padding: 10px;
+        margin: 20px;
+        box-shadow: 2px 2px 6px #dcdcdc;
+        border-radius: 5px;
+
+        .bio{
+          width: 100%;
+          height: 100%;
+          
+          text-align: left;
+          font-family: DingTalk_JinBuTi_Regular;
+        }
+      }
+
+      // 单独的额外样式
+      .company_info{
+        margin-top: 30px;
+      }
+
+    }
+
+    .skeleton_box{
+      width: 90%;
+      height: auto;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      .base_info{
+        width: 100%;
+        height: auto;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-end;
+
+        padding: 10px;
+
+        .amatar_box{
+          width: 30%;
+          height: 100%;
+
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          
+          .avatar{
+            width: 80%;
+            height: 80%;
+
+            border-radius: 50%;
+            box-shadow: 2px 2px 6px #dcdcdc;
+          }
+        }
+
+        .name_box{
+          width: 70%;
+          height: 100%;
+
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          .name{
+            width: 100%;
+            height: auto;
+
+            text-align: left;
+            padding-left: 20px;
+            font-size: 40px;
+            letter-spacing: 1px;
+            font-family: TsangerYuYangT_W05_W05;
+          }
+
+          .login{
+            width: 100%;
+            height: auto;
+
+            text-align: left;
+            padding-left: 20px;
+            font-size: 20px;
+            letter-spacing: 1px;
+            font-family: TsangerYuYangT_W02_W02;
+          }
+        }
+      }
+
+      .company_info, .link_info{
+        width: 100%;
+        height: auto;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+
+        padding: 10px;
+
+        .group_box{
+          width: 50%;
+          height: 100%;
+
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+          align-items: center;
+
+          .icon{
+            width: 20px;
+            height: 20px;
+
+            margin-right: 5px;
+          }
+
+          // 以下为各个文字组件的样式
+          .position, .location, .company, .url, .blog{
+            font-family: DingTalk_JinBuTi_Regular;
+          }
+
+          .position{
+            width: 30%;
+            height: auto;
+
+            text-align: left;
+          }
+
+          .location{
+            width: 50%;
+            height: auto;
+
+            margin-left: 5px;
+            text-align: left;
+          }
+
+          .company, .url, .blog{
+            width: 90%;
+            height: auto;
+
+            text-align: left;
+          }
+        }
+      }
+
+      .email_info, .bio_info{
+        width: 100%;
+        height: 100%;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+
+        padding: 10px;
+
+        .group_box{
+          width: 50%;
+          height: 100%;
+
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+          align-items: center;
+
+          .email{
+            width: 48%;
+            height: 100%;
+            
+            text-align: left;
+            font-family: DingTalk_JinBuTi_Regular;
+            background-color: red;
+          }
+        }
+
+        // 以下为各个文字组件的样式
+        .bio{
+          width: 48%;
+          height: 100%;
+          
+          text-align: left;
+          font-family: DingTalk_JinBuTi_Regular;
+        }
+      }
+
+      // 单独的额外样式
+      .company_info{
+        margin-top: 30px;
+      }
     }
   }
 }

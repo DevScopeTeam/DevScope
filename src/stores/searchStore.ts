@@ -6,21 +6,31 @@ export const useSearchStore = defineStore('searchStore', () => {
     mode: false, // 是否按领域搜索
     searchContent: '' // 搜索的内容
   })
+
+  // 获取搜索的内容
+  const getSearchMode = () => {
+    return state.mode
+  }
   
   // 切换搜索模式
-  function changeSearchMode() {
+  const changeSearchMode = () => {
     state.mode = !state.mode
   }
 
   // 获取搜索的内容
-  function getSearchContent() {
+  const getSearchContent = () => {
     return state.searchContent
   }
 
   // 更新搜索的内容
-  function setSearchContent(content: string) {
+  const setSearchContent = (content: string) => {
     state.searchContent = content
   }
 
-  return { state, changeSearchMode, getSearchContent, setSearchContent }
+  // 判断searchContent是否为空
+  const checkIfEmpty = () => {
+    return state.searchContent !== null && state.searchContent !== ''
+  }
+
+  return { state, getSearchMode, changeSearchMode, getSearchContent, setSearchContent, checkIfEmpty }
 })

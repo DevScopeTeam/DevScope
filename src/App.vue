@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TitleLogo from '@/components/TitleLogo.vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -21,7 +22,7 @@ const isHome = computed(() => {
   <div>
     <!--顶部状态栏-->
     <div class="status_bar" v-show="isHome">
-      
+      <TitleLogo class="title"/>
     </div>
 
     <!--路由-->
@@ -48,6 +49,17 @@ const isHome = computed(() => {
   z-index: 99999; // 置于最顶层
 
   background: #e1e1e1;
+
+  .title{
+    width: 100px;
+    height: 100%;
+
+    font-family: TsangerYuYangT_W05_W05;
+    font-size: 24px;
+    color: rgb(85, 158, 237);
+    font-style: italic;
+    letter-spacing: 2px;
+  }
 }
 
 .router_view{

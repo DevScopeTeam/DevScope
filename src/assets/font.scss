@@ -1,5 +1,67 @@
+// 仓耳渔阳体 W01
+@font-face {
+  font-family: "TsangerYuYangT_W01_W01";
+  font-weight: 400;
+  src: url("/font/TsangerYuYangT_W01_W01.ttf");
+  font-display: swap;
+}
+// 仓耳渔阳体 W02
+@font-face {
+  font-family: "TsangerYuYangT_W02_W02";
+  font-weight: 400;
+  src: url("/font/TsangerYuYangT_W02_W02.ttf");
+  font-display: swap;
+}
+// 仓耳渔阳体 W03
+@font-face {
+  font-family: "TsangerYuYangT_W03_W03";
+  font-weight: 400;
+  src: url("/font/TsangerYuYangT_W03_W03.ttf");
+  font-display: swap;
+}
+// 仓耳渔阳体 W04
+@font-face {
+  font-family: "TsangerYuYangT_W04_W04";
+  font-weight: 400;
+  src: url("/font/TsangerYuYangT_W04_W04.ttf");
+  font-display: swap;
+}
 // 仓耳渔阳体 W05
 @font-face {
-  font-family: "TsangerYuYangT_W05_W05";font-weight: 400;src: url("/font/TsangerYuYangT_W05_W05.ttf");
+  font-family: "TsangerYuYangT_W05_W05";
+  font-weight: 400;
+  src: url("/font/TsangerYuYangT_W05_W05.ttf");
+  font-display: swap;
+}
+// 得意黑
+@font-face {
+  font-family: "SmileySans-Oblique";
+  font-weight: 400;
+  src: url("/font/SmileySans-Oblique.woff");
+  src: url("/font/SmileySans-Oblique.woff2") format("woff2"), 
+    url("/font/SmileySans-Oblique.woff") format("woff");
+  font-display: swap;
+}
+// Nabla可变字体
+@font-face {
+  font-family: "Nabla_Regular";
+  font-weight: 300;
+  src: url("/font/Nabla_Regular.woff2") format("woff2"), 
+    url("/font/Nabla_Regular.woff") format("woff");
+  font-display: swap;
+}
+// 钉钉进步体
+@font-face {
+  font-family: "DingTalk_JinBuTi_Regular";
+  font-weight: 200;
+  src: url("/font/DingTalk_JinBuTi_Regular.woff2") format("woff2"), 
+    url("/font/DingTalk_JinBuTi_Regular.woff") format("woff");
+  font-display: swap;
+}
+// Oraqle-Script-2
+@font-face {
+  font-family: "Oraqle-Script-2";
+  font-weight: 400;
+  src: url("/font/Oraqle-Script-2.otf");
   font-display: swap;
 }
