@@ -12,8 +12,8 @@ const mode = computed(() => userStore.state.mode)
   <el-switch class="switch"
     v-model="mode"
     inline-prompt
-    active-text="领域"
-    active-color="#4ab6f9"
+    active-text="Field"
+    active-color="#c4e2f4"
     inactive-color="#ff4949">
   </el-switch>
 </template>
@@ -26,8 +26,8 @@ const mode = computed(() => userStore.state.mode)
 
 /* 自定义switch样式 */
 :deep(.el-switch__core) {
-  width: 50px;
-  height: 25px;
+  width: 60px;
+  height: 27px;
   border-radius: 15px;
   background-color: #efefef;
 }

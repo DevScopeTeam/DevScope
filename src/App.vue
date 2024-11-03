@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import TitleLogo from '@/components/TitleLogo.vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
+import TitleLogo from '@/components/TitleLogo.vue'
+import SearchBar from '@/components/SearchBar.vue'
+import back from '@/assets/image/back.png'
 
 const route = useRoute() // 使用路由
+const router = useRouter() // 使用路由
 
 // 是否显示status bar
 const isHome = computed(() => {
@@ -16,13 +20,23 @@ const isHome = computed(() => {
   return res
 })
 
+// return to the home page
+const goback = () => {
+  router.push({
+    path: '/'
+  })
+}
+
 </script>
 
 <template>
   <div>
     <!--顶部状态栏-->
     <div class="status_bar" v-show="isHome">
-      <TitleLogo class="title"/>
+      <img class="back" :src="back" alt="" @click="goback()"/>
+      <TitleLogo class="title" :color="'#000000'" :fontSize="24" :fontFamily="'YeZiGongChangShanHaiMingChao-2'" :letterSpacing="2"/>
+      <SearchBar class="search_bar" :inputWidth="200" :inputWidthUnit="'px'" :inputHeight="30" :inputHeightUnit="'px'" 
+        :image="1" :iconWidth="25" :iconHeight="25"/>
     </div>
 
     <!--路由-->
@@ -48,23 +62,39 @@ const isHome = computed(() => {
   left: 0;
   z-index: 99999; // 置于最顶层
 
-  background: #e1e1e1;
+  background: #ffffff;
+
+  .back{
+    width: 30px;
+    height: 30px;
+
+    position: fixed;
+    left: 50px;
+    cursor: pointer;
+  }
 
   .title{
     width: 100px;
     height: 100%;
+  }
 
-    font-family: TsangerYuYangT_W05_W05;
-    font-size: 24px;
-    color: rgb(85, 158, 237);
-    font-style: italic;
-    letter-spacing: 2px;
+  .search_bar{
+    width: 200px;
+    height: 30px;
+
+    position: fixed;
+    right: 50px;
   }
 }
 
 .router_view{
   width: 100%;
   height: calc(100% - 54px);
+
+  // page bg
+  background-image: url('@/assets/image/bg.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 
   position: absolute;
   top: 54px;
@@ -80,6 +110,11 @@ const isHome = computed(() => {
 .router_view_home{
   width: 100%;
   height: 100%;
+
+  // page bg
+  background-image: url('@/assets/image/bg.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 
   position: absolute;
   top: 0px;

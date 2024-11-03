@@ -1,10 +1,6 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 
-// interface UserObject {
-//   [key: string]: any;
-// }
-
 export const useUserStore = defineStore('userStore', () => {  
   const state = reactive({
     // user: '', // 用户信息对象（按username搜索）
@@ -25,7 +21,6 @@ export const useUserStore = defineStore('userStore', () => {
 
   // 获取用户信息
   const getUserList = () => {
-    console.log('userList: ' + state.userList)
     return state.userList
   }
 

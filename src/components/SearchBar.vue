@@ -3,10 +3,23 @@ import { reactive } from 'vue'
 import { useSearchStore } from '@/stores/searchStore'
 import { useUserStore } from '@/stores/userStore'
 import search from '@/assets/image/search.png'
+import search_black from '@/assets/image/search_black.png'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { ElNotification } from 'element-plus'
+import { defineProps } from 'vue'
 
+interface Props {
+  inputWidth: number
+  inputWidthUnit: string
+  inputHeight: number
+  inputHeightUnit: string
+  image: number // 0: white, 1: black
+  iconWidth: number
+  iconHeight: number
+}
+
+const props = defineProps<Props>()
 const router = useRouter() // 使用路由
 
 /* 使用pinia的数据，实现父子组件通信 */
@@ -59,14 +72,19 @@ const goSearch = async () => {
             })
           } else {
             let api_user = res.data.user
+            // 空数据填充N/A
             for (let item in api_user) {
-              if (api_user[item] === null || api_user[item] === '' || api_user[item] === undefined) { // 空数据填充N/A
+              if (api_user[item] === null || api_user[item] === '' || api_user[item] === undefined) {
                 api_user[item] = 'N/A'
               }
             }
+
+            // TODO...  构造Position字段
+            api_user['position'] = 'China'
+
+
             
             state.arr.push(JSON.stringify(api_user))
-            console.log('userinfo', state.arr)
             
             // 往userStore.ts更新获取的user信息
             userStore.setUserList(state.arr)
@@ -96,13 +114,16 @@ const goSearch = async () => {
 
 <template>
   <div class="outer_box">
-    <el-input class="input"
+    <el-input class="input" 
+      :style="{width:props.inputWidth+props.inputWidthUnit, height:props.inputHeight+props.inputHeightUnit}"
       placeholder="Enter what you want to know."
+      @change="goSearch()"
       v-model="searchStore.state.searchContent">
     </el-input>
 
     <div class="button">
-      <img class="icon" :src="search" alt="" @click="goSearch()"/>
+      <img class="icon" :style="{width:props.iconWidth+'px', height:props.iconHeight+'px'}" 
+        :src="props.image===0 ? search : search_black" alt="" @click="goSearch()"/>
     </div>
   </div>
 </template>
@@ -118,12 +139,6 @@ const goSearch = async () => {
   justify-content: center;
   align-items: center;
 
-  .input{
-    width: 85%;
-    height: 60px;
-
-  }
-
   /* 自定义el-input内部样式 */
   :deep(.el-input__wrapper) { /* 外框 */
     border-radius: 40px;
@@ -133,7 +148,7 @@ const goSearch = async () => {
     margin: 0 20px;
     font-size: 18px;
     letter-spacing: 2px;
-    font-weight: 500;
+    font-weight: 400;
   }
 
   /* 搜索图标 */
@@ -147,8 +162,7 @@ const goSearch = async () => {
     align-items: center;
 
     .icon{
-      width: 40px;
-      height: 40px;
+      margin-left: 5px;
     }
 
     .icon:hover{

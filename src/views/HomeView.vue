@@ -16,14 +16,16 @@ const changeSearchMode = async () => {
 <template>
   <div class="outer_box">
     <!-- title -->
-    <TitleLogo class="title"/>
-    
+    <TitleLogo class="title" :color="'rgb(247, 250, 252)'" :fontSize="60" :fontFamily="'TsangerYuYangT_W05_W05'" 
+      :fontStyle="'italic'" :letterSpacing="3"/>
+
     <!-- 搜索框 -->
     <div class="search_box">
       <!-- 切换搜索模式 -->
       <Switch class="switch" @click="changeSearchMode"/>
       <!-- 搜索区域 -->
-      <SearchBar class="search_bar" />
+      <SearchBar class="search_bar" :inputWidth="85" :inputWidthUnit="'%'" :inputHeight="60" :inputHeightUnit="'px'" 
+        :image="0" :iconWidth="40" :iconHeight="40"/>
     </div>
   </div>
 </template>
@@ -41,12 +43,6 @@ const changeSearchMode = async () => {
   .title{
     width: 60%;
     height: 100px;
-
-    font-family: TsangerYuYangT_W05_W05;
-    font-size: 60px;
-    color: rgb(85, 158, 237);
-    font-style: italic;
-    letter-spacing: 3px;
   }
   
   .search_box{
