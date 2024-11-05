@@ -46,9 +46,9 @@ onBeforeMount(() => {
   nextTick(()=>{
     // 获取TalentRank数据
     axios.get('https://api.devscope.search.ren/rank/score?username=' + searchStore.state.searchContent)
-      .then(res3 => {
-        // console.log('rank res.data', res3.data.score)
-        if (res3.data.code !== 200) {
+      .then(res => {
+        // console.log('rank res.data', res.data.score)
+        if (res.data.code !== 200) {
           ElNotification({
             title: 'Attention',
             message: 'There is no such user!',
@@ -59,14 +59,14 @@ onBeforeMount(() => {
         } else {
           // 构造TalentRank数据
           talentRank.login = props.data
-          talentRank.project = res3.data.score.project.toFixed(2)
-          talentRank.code = res3.data.score.code.toFixed(2)
-          talentRank.influence = res3.data.score.influence.toFixed(2)
-          talentRank.overall = res3.data.score.overall.toFixed(2)
-          console.log('talentRank', talentRank)
+          talentRank.project = res.data.score.project.toFixed(2)
+          talentRank.code = res.data.score.code.toFixed(2)
+          talentRank.influence = res.data.score.influence.toFixed(2)
+          talentRank.overall = res.data.score.overall.toFixed(2)
 
           // 往userStore.ts更新获取的talentRank信息
           userStore.setTalentRank(talentRank)
+          // console.log('talentRank', userStore.getTalentRank())
 
           setTimeout(()=>{
             SetChart()
@@ -113,10 +113,10 @@ const SetChart = () => {
         // data: [props.data.login],
         data: [talentRank.login],
         bottom: 10,
-        itemGap: 20,
+        itemGap: 10,
         textStyle: {
           color: '#fff',
-          fontSize: 14
+          fontSize: 12
         },
         selectedMode: 'multiple' // 图例模式
       },
@@ -224,9 +224,6 @@ const SetChart = () => {
       <template #template>
         <el-skeleton-item variant="image" class="image"/>
       </template>
-      <!-- <template #default>
-        <div class="echart_box" id="chart" ref="chart"></div>
-      </template> -->
     </el-skeleton>
 
     <div v-show="!state.isLoading" class="echart_box" id="chart" ref="chart"></div>
@@ -244,7 +241,7 @@ const SetChart = () => {
   align-items: center;
 
   .skeleton_box{
-    width: 450px;
+    width: 500px;
     height: 270px;
 
     .image{
@@ -254,7 +251,7 @@ const SetChart = () => {
   }
 
   .echart_box{
-    width: 450px;
+    width: 500px;
     height: 270px;
   }
 }

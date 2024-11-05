@@ -40,6 +40,7 @@ export const useUserStore = defineStore('userStore', () => {
     overall = 0
   }
   let curTalentRank = reactive<TalentRank>(new TalentRankClass())
+  let curTalentRankList = reactive<TalentRank[]>(new Array())
 
   // 获取talentRank
   const getTalentRank = () => {
@@ -51,5 +52,15 @@ export const useUserStore = defineStore('userStore', () => {
     curTalentRank = newTalentRank
   }
 
-  return { state, getUserList, setUserList, getTalentRank, setTalentRank }
+  // 获取talentRankList
+  const getTalentRankList = () => {
+    return curTalentRankList
+  }
+
+  // 设置talentRankList
+  const setTalentRankList = (newTalentRankList: TalentRank[]) => {
+    curTalentRankList = newTalentRankList
+  }
+
+  return { state, getUserList, setUserList, getTalentRank, setTalentRank, getTalentRankList, setTalentRankList }
 })

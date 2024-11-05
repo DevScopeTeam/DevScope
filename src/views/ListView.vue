@@ -13,6 +13,8 @@ import top1 from '@/assets/image/top1.png'
 import top2 from '@/assets/image/top2.png'
 import top3 from '@/assets/image/top3.png'
 import RadarChart from '@/components/RadarChart.vue'
+import BarChart from '@/components/BarChart.vue'
+import LineChart from '@/components/LineChart.vue'
 import { type UserItem } from '@/types/UserItem'
 import { type TalentRank } from '@/types/TalentRank'
 import axios from 'axios'
@@ -86,12 +88,6 @@ onBeforeMount(() => {
   
   // 构造top3
   state.top3List.push(top1, top2, top3)
-
-  // // 调api获取talentRank数据
-  // getTalentRankData()
-
-  // // 获取存到pinio中的talentRank数据
-  // talentRank = userStore.getTalentRank()
 })
 
 const selectUser = (user: UserItem) => {
@@ -186,8 +182,9 @@ const selectUser = (user: UserItem) => {
         <div class="rank_box">
           <div class="base_box">
             <div class="rank_title">Talent Rank</div>
-            <!-- <RadarChart class="radar_chart" :data="talentRank"/> -->
             <RadarChart class="radar_chart" :data="curUser.login" />
+            <BarChart class="bar_chart" />
+            <LineChart class="line_chart" />
           </div>
         </div>
       </div>
@@ -530,8 +527,8 @@ const selectUser = (user: UserItem) => {
 
           text-align: left;
 
-          font-family: Oraqle-Script-2;
-          letter-spacing: 3px;
+          font-family: Hey-November-2;
+          letter-spacing: 5px;
           font-size: 34px;
           padding-left: 50px;
           padding-top: 10px;
@@ -539,7 +536,31 @@ const selectUser = (user: UserItem) => {
 
         .radar_chart{
           width: 100%;
-          height: 90%;
+          height: 30%;
+
+          padding-top: 0;
+
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .bar_chart{
+          width: 100%;
+          height: 30%;
+
+          padding-top: 0;
+
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .line_chart{
+          width: 100%;
+          height: 30%;
 
           padding-top: 0;
 
