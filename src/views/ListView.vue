@@ -12,6 +12,11 @@ import email from '@/assets/image/email.png'
 import top1 from '@/assets/image/top1.png'
 import top2 from '@/assets/image/top2.png'
 import top3 from '@/assets/image/top3.png'
+import RadarChart from '@/components/RadarChart.vue'
+import { type UserItem } from '@/types/UserItem'
+import { type TalentRank } from '@/types/TalentRank'
+import axios from 'axios'
+import { ElNotification } from 'element-plus'
 
 const route = useRoute() // 使用路由
 
@@ -20,7 +25,6 @@ const userStore = useUserStore()
 const searchStore = useSearchStore()
 
 const state = reactive({
-  isLoading: true, // 是否加载中
   top3List: [] as string[] // 存放top3的排名图标
 })
 
@@ -38,39 +42,24 @@ class userInfoClass {
   email = ''
   bio = ''
 }
-
-// define type of object
-interface UserItem {
-  id: number,
-  avatar_url: string,
-  name: string,
-  login: string,
-  position: string,
-  location: string,
-  company: string,
-  url: string,
-  blog: string,
-  email: string,
-  bio: string
-};
-
 // define userinfo object
 let curUser = reactive<UserItem>(new userInfoClass())
 let userList = reactive<UserItem[]>(new Array())
 
+// define object class
+class TalentRankClass {
+  id = 0
+  login = ''
+  project = 0
+  code = 0
+  influence = 0
+  overall = 0
+}
+let talentRank = reactive<TalentRank>(new TalentRankClass())
+
+// allocate member of UserItem
 const allocateMember = (input: UserItem) => {
   let user = reactive<UserItem>(new userInfoClass())
-  // user.id = (JSON.parse(input)).id
-  // user.avatar_url = (JSON.parse(input)).avatar_url
-  // user.bio = (JSON.parse(input)).bio
-  // user.blog = (JSON.parse(input)).blog
-  // user.company = (JSON.parse(input)).company
-  // user.email = (JSON.parse(input)).email
-  // user.location = (JSON.parse(input)).location
-  // user.login = (JSON.parse(input)).login
-  // user.position = (JSON.parse(input)).position
-  // user.url = (JSON.parse(input)).url
-  // user.name = (JSON.parse(input)).name
   user.id = input.id
   user.avatar_url = input.avatar_url
   user.bio = input.bio
@@ -87,19 +76,22 @@ const allocateMember = (input: UserItem) => {
 
 onBeforeMount(() => {
   // 构造用户信息
-  let tmp = userStore.getUserList()  // string array
+  let tmp = userStore.getUserList() // string array
   for(let i=0;i<tmp.length;i++){
     let user = allocateMember(JSON.parse(tmp[i]))
     userList.push(user)
   }
   console.log('userList', userList)
   curUser = userList[0]
-
-  state.isLoading = false // 测试
-  console.log('loading', state.isLoading)
-
+  
   // 构造top3
   state.top3List.push(top1, top2, top3)
+
+  // // 调api获取talentRank数据
+  // getTalentRankData()
+
+  // // 获取存到pinio中的talentRank数据
+  // talentRank = userStore.getTalentRank()
 })
 
 const selectUser = (user: UserItem) => {
@@ -130,7 +122,7 @@ const selectUser = (user: UserItem) => {
 
     <!-- 主体内容 -->
     <div class="body_box">
-      <div v-if="state.isLoading === false">
+      <div>
         <!-- info -->
         <div class="info_box">
           <div class="base_info">
@@ -192,58 +184,12 @@ const selectUser = (user: UserItem) => {
 
         <!-- talentRank -->
         <div class="rank_box">
-          1
+          <div class="base_box">
+            <div class="rank_title">Talent Rank</div>
+            <!-- <RadarChart class="radar_chart" :data="talentRank"/> -->
+            <RadarChart class="radar_chart" :data="curUser.login" />
+          </div>
         </div>
-      </div>
-
-      <!-- skeleton -->
-      <div v-else>
-        <el-skeleton class="skeleton_box" animated>
-          <template slot="template">
-            <div class="base_info">
-              <div class="amatar_box">
-                <el-skeleton-item variant="image" style="width: 80%;height: 80%;" class="avatar"/>
-              </div>
-              <div class="name_box">
-                <el-skeleton-item variant="text" class="name" />
-                <el-skeleton-item variant="text" class="login" />
-              </div>
-            </div>
-
-            <div class="company_info">
-              <div class="group_box">
-                <el-skeleton-item variant="image" class="icon"/>
-                <el-skeleton-item variant="text" class="position" />
-                <el-skeleton-item variant="text" class="location" />
-              </div>
-              <div class="group_box">
-                <el-skeleton-item variant="image" class="icon"/>
-                <el-skeleton-item variant="text" class="company" />
-              </div>
-            </div>
-
-            <div class="link_info">
-              <div class="group_box">
-                <el-skeleton-item variant="image" class="icon"/>
-                <el-skeleton-item variant="text" class="url" />
-              </div>
-              <div class="group_box">
-                <el-skeleton-item variant="image" class="icon"/>
-                <el-skeleton-item variant="text" class="blog" />
-              </div>
-            </div>
-
-            <div class="email_info">
-              <div class="group_box">
-                <el-skeleton-item variant="text" class="email" />
-              </div>
-            </div>
-
-            <div class="bio_info">
-              <el-skeleton-item variant="text" class="bio" />
-            </div>
-          </template>
-        </el-skeleton>
       </div>
     </div>
   </div>
@@ -300,9 +246,6 @@ const selectUser = (user: UserItem) => {
       width: 100%;
       height: 45px;
 
-      // background-image: url('@/assets/image/list_title_blue.png');
-      // background-repeat: no-repeat;
-      // background-size: 100% 100%;
       border-radius: 0 0 6px 6px;
       box-shadow: 1px 2px #dcdcdc;
       background-color: rgb(255, 255, 255);
@@ -427,6 +370,11 @@ const selectUser = (user: UserItem) => {
             font-size: 40px;
             letter-spacing: 1px;
             font-family: TsangerYuYangT_W05_W05;
+
+            // 溢出隐藏
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
           }
 
           .login{
@@ -438,6 +386,11 @@ const selectUser = (user: UserItem) => {
             font-size: 20px;
             letter-spacing: 1px;
             font-family: TsangerYuYangT_W02_W02;
+
+            // 溢出隐藏
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
           }
         }
       }
@@ -453,8 +406,6 @@ const selectUser = (user: UserItem) => {
         display: flex;
         flex-direction: row;
         align-items: flex-start;
-
-        margin-left: 10px;
       }
 
       .company_info, .link_info, .email_info{
@@ -464,7 +415,8 @@ const selectUser = (user: UserItem) => {
         padding: 10px;
 
         .group_box{
-          width: 48%;
+          // width: 48%;
+          width: 415px;
           height: 100%;
 
           display: flex;
@@ -559,176 +511,43 @@ const selectUser = (user: UserItem) => {
       align-items: center;
 
       margin-top: 180px;
-    }
 
-    .skeleton_box{
-      width: 90%;
-      height: auto;
-
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-
-      .base_info{
-        width: 100%;
-        height: auto;
-
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: flex-end;
-
-        padding: 10px;
-
-        .amatar_box{
-          width: 30%;
-          height: 100%;
-
-          display: flex;
-          flex-direction: row;
-          justify-content: center;
-          align-items: center;
-          
-          .avatar{
-            width: 80%;
-            height: 80%;
-
-            border-radius: 50%;
-            box-shadow: 2px 2px 6px #dcdcdc;
-          }
-        }
-
-        .name_box{
-          width: 70%;
-          height: 100%;
-
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-
-          .name{
-            width: 100%;
-            height: auto;
-
-            text-align: left;
-            padding-left: 20px;
-            font-size: 40px;
-            letter-spacing: 1px;
-            font-family: TsangerYuYangT_W05_W05;
-          }
-
-          .login{
-            width: 100%;
-            height: auto;
-
-            text-align: left;
-            padding-left: 20px;
-            font-size: 20px;
-            letter-spacing: 1px;
-            font-family: TsangerYuYangT_W02_W02;
-          }
-        }
-      }
-
-      .company_info, .link_info{
-        width: 100%;
-        height: auto;
-
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: flex-start;
-
-        padding: 10px;
-
-        .group_box{
-          width: 50%;
-          height: 100%;
-
-          display: flex;
-          flex-direction: row;
-          justify-content: flex-start;
-          align-items: center;
-
-          .icon{
-            width: 20px;
-            height: 20px;
-
-            margin-right: 5px;
-          }
-
-          // 以下为各个文字组件的样式
-          .position, .location, .company, .url, .blog{
-            font-family: DingTalk_JinBuTi_Regular;
-          }
-
-          .position{
-            width: 30%;
-            height: auto;
-
-            text-align: left;
-          }
-
-          .location{
-            width: 50%;
-            height: auto;
-
-            margin-left: 5px;
-            text-align: left;
-          }
-
-          .company, .url, .blog{
-            width: 90%;
-            height: auto;
-
-            text-align: left;
-          }
-        }
-      }
-
-      .email_info, .bio_info{
-        width: 100%;
+      .base_box{
+        width: 95%;
         height: 100%;
 
         display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
+        flex-direction: column;
+        justify-content: center;
         align-items: center;
+        
+        box-shadow: 2px 2px 6px #dcdcdc;
+        border-radius: 10px;
 
-        padding: 10px;
+        .rank_title{
+          width: 100%;
+          height: 10%;
 
-        .group_box{
-          width: 50%;
-          height: 100%;
+          text-align: left;
+
+          font-family: Oraqle-Script-2;
+          letter-spacing: 3px;
+          font-size: 34px;
+          padding-left: 50px;
+          padding-top: 10px;
+        }
+
+        .radar_chart{
+          width: 100%;
+          height: 90%;
+
+          padding-top: 0;
 
           display: flex;
-          flex-direction: row;
-          justify-content: flex-start;
+          flex-direction: column;
+          justify-content: center;
           align-items: center;
-
-          .email{
-            width: 48%;
-            height: 100%;
-            
-            text-align: left;
-            font-family: DingTalk_JinBuTi_Regular;
-            background-color: red;
-          }
         }
-
-        // 以下为各个文字组件的样式
-        .bio{
-          width: 48%;
-          height: 100%;
-          
-          text-align: left;
-          font-family: DingTalk_JinBuTi_Regular;
-        }
-      }
-
-      // 单独的额外样式
-      .company_info{
-        margin-top: 30px;
       }
     }
   }

@@ -8,6 +8,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { ElNotification } from 'element-plus'
 import { defineProps } from 'vue'
+import { type TalentRank } from '@/types/TalentRank'
 
 interface Props {
   inputWidth: number
@@ -18,8 +19,8 @@ interface Props {
   iconWidth: number
   iconHeight: number
 }
-
 const props = defineProps<Props>()
+
 const router = useRouter() // 使用路由
 
 /* 使用pinia的数据，实现父子组件通信 */
@@ -31,12 +32,23 @@ const state = reactive({
   arr: [] as string[]
 })
 
-const goSearch = async () => {
+// define object class
+class TalentRankClass {
+  id = 0
+  login = ''
+  project = 0
+  code = 0
+  influence = 0
+  overall = 0
+}
+let talentRank = reactive<TalentRank>(new TalentRankClass())
+
+const goSearch = () => {
   // await userStore.changeSearchMode()
   console.log('current search content: ' + searchStore.state.searchContent)
 
   if (searchStore.checkIfEmpty() === true) {
-    // 区分是普通搜索还是领域搜索
+    // 区分普通搜索\领域搜索
     if (searchStore.getSearchMode() === true) {
       // TODO ...领域搜索,call api using axios
 
@@ -60,8 +72,7 @@ const goSearch = async () => {
       // call api using axios
       axios.get('https://api.devscope.search.ren/github/user/info?username=' + searchStore.state.searchContent)
         .then(res => {
-          console.log('res.data', res.data)
-          
+          // console.log('user res.data', res.data)
           if (res.data.code !== 200) {
             ElNotification({
               title: 'Attention',
@@ -79,19 +90,36 @@ const goSearch = async () => {
               }
             }
 
-            // TODO...  构造Position字段
-            api_user['position'] = 'China'
+            // 构造Position字段
+            axios.get('https://api.devscope.search.ren/github/user/nation?username=' + searchStore.state.searchContent)
+            .then(res2 => {
+              // console.log('positon res.data', res2.data)
+              if (res2.data.code !== 200) {
+                ElNotification({
+                  title: 'Attention',
+                  message: 'There is no such user!',
+                  type: 'warning',
+                  position: 'top-right',
+                  offset: 60
+                })
+              } else {
+                // get the nation
+                api_user['position'] = res2.data.nation
 
+                // push userinfo into the array
+                state.arr.push(JSON.stringify(api_user))
 
-            
-            state.arr.push(JSON.stringify(api_user))
-            
-            // 往userStore.ts更新获取的user信息
-            userStore.setUserList(state.arr)
+                // 往userStore.ts更新获取的user信息
+                userStore.setUserList(state.arr)
 
-            // 跳转到ListView
-            router.push({
-              path: '/list'
+                // 跳转到ListView
+                router.push({
+                  path: '/list'
+                })
+              }
+            })
+            .catch(err => {
+              console.log('err', err)
             })
           }
         })
@@ -109,7 +137,6 @@ const goSearch = async () => {
     })
   }
 }
-
 </script>
 
 <template>
@@ -143,7 +170,6 @@ const goSearch = async () => {
   :deep(.el-input__wrapper) { /* 外框 */
     border-radius: 40px;
   }
-
   :deep(.el-input__inner) { /* 输入区域 */
     margin: 0 20px;
     font-size: 18px;
