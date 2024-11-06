@@ -143,7 +143,6 @@ const goSearch = () => {
     <el-input class="input" 
       :style="{width:props.inputWidth+props.inputWidthUnit, height:props.inputHeight+props.inputHeightUnit}"
       placeholder="Enter what you want to know."
-      @change="goSearch()"
       v-model="searchStore.state.searchContent">
     </el-input>
 
