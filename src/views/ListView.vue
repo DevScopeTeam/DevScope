@@ -165,7 +165,7 @@ watch(
 
 <template>
   <div class="outer_box">
-    <!-- 列表(按领域搜索时显示) -->
+    <!-- 列表 -->
     <!-- <div class="list_box" v-show="searchStore.getSearchMode()"> -->
     <div class="list_box">
       <div class="list_title">
@@ -177,7 +177,7 @@ watch(
         <!--排名数字（others）-->
         <div class="number" v-else>{{ index + 1 }}</div>
         <div class="username">{{ item.login }}</div>
-        <!-- <img class="image" :src="item.avatar_url" alt=""/> -->
+        <div class="score">{{ item.overall }}</div>
       </div>
     </div>
 
@@ -271,7 +271,7 @@ watch(
 
   .list_box{
     width: 20%;
-    height: 95%;
+    height: 725px;
 
     padding: 10px;
     border-radius: 10px;
@@ -280,7 +280,6 @@ watch(
 
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
     align-items: center;
 
     margin-right: 10px;
@@ -304,18 +303,30 @@ watch(
       letter-spacing: 3px;
       font-size: 34px;
       color: #ffffff;
-      
+
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+
+      // // fixed at the top
+      // position: -webkit-sticky;
+      // position: sticky;
+      // top: 0;
+      // z-index: 9999;
     }
 
+    .list_content:nth-child(1){
+      border-radius: 0 0 6px 6px;
+      margin-top: 50px;
+    }
+    .list_content:not(:first-child){
+      border-radius: 6px;
+    }
     .list_content{
       width: 100%;
       height: 45px;
 
-      border-radius: 0 0 6px 6px;
       box-shadow: 1px 2px #dcdcdc;
       background-color: rgb(255, 255, 255);
       cursor: pointer;
@@ -324,6 +335,8 @@ watch(
       flex-direction: row;
       justify-content: center;
       align-items: center;
+
+      margin-bottom: 3px;
 
       .number{
         width: 15%;
@@ -340,7 +353,7 @@ watch(
       }
 
       .username{
-        width: 65%;
+        width: 55%;
         height: 100%;
 
         display: flex;
@@ -355,10 +368,22 @@ watch(
 
       .image{
         width: 15%;
-        height: 90%;
+        height: 100%;
 
         padding: 5px;
         margin-right: 5px;
+        text-align: center;
+      }
+
+      .score{
+        width: 15%;
+        height: 100%;
+
+        padding: 5px;
+        margin-top: 10px;
+        
+        color: rgb(59, 59, 79);
+        font-family: TsangerYuYangT_W05_W05;
       }
     }
   }
@@ -475,6 +500,7 @@ watch(
         display: flex;
         flex-direction: row;
         align-items: flex-start;
+        // margin-left: 4%;
       }
 
       .company_info, .link_info, .email_info{
