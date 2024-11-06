@@ -2,6 +2,7 @@
 export interface TalentRank {
   id: number, // userid
   login: string, // username(search key)
+  nation: string, // nation
 
   // TalentRank-related
   project: number,

@@ -20,6 +20,7 @@ const userStore = useUserStore()
 class TalentRankClass {
   id = 0
   login = ''
+  nation = ''
   project = 0
   code = 0
   influence = 0
@@ -46,53 +47,9 @@ const line_chart = ref(null)
 onBeforeMount(() => {
   nextTick(()=>{
     // 获取TalentRank数据
-    axios.get('https://api.devscope.search.ren/rank/list?page=' + '1' + '&pageSize=' + '10')
-      .then(res => {
-        // console.log('rank list data', res.data)
-        if (res.data.code !== 200) {
-          ElNotification({
-            title: 'Attention',
-            message: 'There is no user!',
-            type: 'warning',
-            position: 'top-right',
-            offset: 60
-          })
-        } else {
-          if (res.data.list.length <= 0) {
-            ElNotification({
-              title: 'Attention',
-              message: 'There is no rank data!',
-              type: 'warning',
-              position: 'top-right',
-              offset: 60
-            })
-          } else {
-            // 构造TalentRank数据
-            for (let i=0; i<res.data.list.length; i++) {
-              talentRank.login = res.data.list[i].username
-              talentRank.project = res.data.list[i].project.toFixed(2)
-              talentRank.code = res.data.list[i].code.toFixed(2)
-              talentRank.influence = res.data.list[i].influence.toFixed(2)
-              talentRank.overall = res.data.list[i].overall.toFixed(2)
-              talentRankList.push(talentRank)
-              
-              // clear the talentRank
-              talentRank = reactive<TalentRank>(new TalentRankClass())
-            }
-            
-            // 往userStore.ts更新获取的talentRankList信息
-            userStore.setTalentRankList(talentRankList)
-            // console.log('talentRankList', userStore.getTalentRankList())
-
-            setTimeout(()=>{
-              SetChart()
-            }, 50)
-          }
-        }
-      })
-      .catch(err => {
-        console.log('err', err)
-      })
+    setTimeout(()=>{
+      SetChart()
+    }, 50)
   })
 })
 
@@ -149,7 +106,6 @@ const SetChart = () => {
     userStore.getTalentRankList().forEach((v) => {
       userName.push(v.login)
     })
-    // console.log('userName',userName)
 
     // 3.put data
     userStore.getTalentRankList().forEach((v1) => {

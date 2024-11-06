@@ -8,7 +8,6 @@ import { useUserStore } from '@/stores/userStore'
 import { ElNotification } from 'element-plus'
 
 interface Props {
-  // data: TalentRank
   data: string
 }
 const props = defineProps<Props>()
@@ -20,6 +19,7 @@ const userStore = useUserStore()
 class TalentRankClass {
   id = 0
   login = ''
+  nation = ''
   project = 0
   code = 0
   influence = 0
@@ -27,16 +27,16 @@ class TalentRankClass {
 }
 let talentRank = reactive<TalentRank>(new TalentRankClass())
 
-// watch(
-//   () => props.data,
-//   (newVal, oldVal) => {
-//       SetChart()
-//   }
-// )
+watch(
+  () => props.data,
+  (newVal, oldVal) => {
+  }
+)
 
 const state = reactive({
   chartData: [] as any[],
-  isLoading: true
+  isLoading: true, 
+  reRendering: true
 })
 
 // 定义ref
@@ -45,7 +45,7 @@ const chart = ref(null)
 onBeforeMount(() => {
   nextTick(()=>{
     // 获取TalentRank数据
-    axios.get('https://api.devscope.search.ren/rank/score?username=' + searchStore.state.searchContent)
+    axios.get('https://api.devscope.search.ren/rank/score?username=' + props.data) // 当前的用户的username
       .then(res => {
         // console.log('rank res.data', res.data.score)
         if (res.data.code !== 200) {
@@ -66,7 +66,6 @@ onBeforeMount(() => {
 
           // 往userStore.ts更新获取的talentRank信息
           userStore.setTalentRank(talentRank)
-          // console.log('talentRank', userStore.getTalentRank())
 
           setTimeout(()=>{
             SetChart()
@@ -79,22 +78,23 @@ onBeforeMount(() => {
   })
 })
 
-onMounted(() => {
-  // setTimeout(() => {
-    // SetChart()
-  // }, 20000)
-})
+// onMounted(() => {
+//   setTimeout(() => {
+//     SetChart()
+//   }, 50)
+// })
 
 const SetChart = () => {
   nextTick(() => {
     state.isLoading = true
+
     const myChart = echarts.init(document.getElementById('chart')) // 声明组件
 
     // construct data
-    // let arr = [props.data.project, props.data.code, props.data.influence] // sample value: [82, 33, 36]
     let arr = [talentRank.project, talentRank.code, talentRank.influence] // sample value: [82, 33, 36]
     state.chartData.push(arr)
     
+    // const myOption = {
     const myOption = {
       backgroundColor: '#0A1222',
 
@@ -210,7 +210,7 @@ const SetChart = () => {
         }
       ]
     }
-    myChart.setOption(myOption)
+    myChart.setOption(myOption, true)
 
     state.isLoading = false
   })

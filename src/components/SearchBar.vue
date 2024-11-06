@@ -27,21 +27,23 @@ const router = useRouter() // 使用路由
 const searchStore = useSearchStore()
 const userStore = useUserStore()
 
-/* 暂存用户信息列表 */
-const state = reactive({
-  arr: [] as string[]
-})
-
 // define object class
 class TalentRankClass {
   id = 0
   login = ''
+  nation = ''
   project = 0
   code = 0
   influence = 0
   overall = 0
 }
 let talentRank = reactive<TalentRank>(new TalentRankClass())
+let talentRankList = reactive<TalentRank[]>(new Array())
+
+/* 暂存用户信息列表 */
+const state = reactive({
+  // arr: [] as string[]
+})
 
 const goSearch = () => {
   // await userStore.changeSearchMode()
@@ -50,7 +52,7 @@ const goSearch = () => {
   if (searchStore.checkIfEmpty() === true) {
     // 区分普通搜索\领域搜索
     if (searchStore.getSearchMode() === true) {
-      // TODO ...领域搜索,call api using axios
+      // TODO ...领域搜索
 
 
       // axios.get('')
@@ -69,7 +71,7 @@ const goSearch = () => {
       //     console.log('err', err)
       //   })
     } else {
-      // call api using axios
+      // 普通搜索(开始调用排名列表，然后调用userinfo，再建立关联)
       axios.get('https://api.devscope.search.ren/github/user/info?username=' + searchStore.state.searchContent)
         .then(res => {
           // console.log('user res.data', res.data)
@@ -90,7 +92,7 @@ const goSearch = () => {
               }
             }
 
-            // 构造Position字段
+            // construct field 'Position'
             axios.get('https://api.devscope.search.ren/github/user/nation?username=' + searchStore.state.searchContent)
             .then(res2 => {
               // console.log('positon res.data', res2.data)
@@ -106,13 +108,10 @@ const goSearch = () => {
                 // get the nation
                 api_user['position'] = res2.data.nation
 
-                // push userinfo into the array
-                state.arr.push(JSON.stringify(api_user))
-
                 // 往userStore.ts更新获取的user信息
-                userStore.setUserList(state.arr)
+                userStore.setUserInfo(JSON.stringify(api_user))
 
-                // 跳转到ListView
+                // jump to the ListView
                 router.push({
                   path: '/list'
                 })

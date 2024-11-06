@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, reactive } from 'vue'
+import { onBeforeMount, reactive, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElSkeleton, ElSkeletonItem } from 'element-plus'
 import { useSearchStore } from '@/stores/searchStore'
@@ -27,7 +27,9 @@ const userStore = useUserStore()
 const searchStore = useSearchStore()
 
 const state = reactive({
-  top3List: [] as string[] // 存放top3的排名图标
+  top3List: [] as string[], // 存放top3的排名图标
+  arr: [] as string[], // 暂存用户信息
+  reRendering: true // true则显示右边的具体信息
 })
 
 // define object class
@@ -52,6 +54,7 @@ let userList = reactive<UserItem[]>(new Array())
 class TalentRankClass {
   id = 0
   login = ''
+  nation = ''
   project = 0
   code = 0
   influence = 0
@@ -76,43 +79,105 @@ const allocateMember = (input: UserItem) => {
   return user
 }
 
+// const selectUser = (user: UserItem) => {
+const selectUser = (user: TalentRank) => {
+  // 根据选择的用户的login，去调用api获取新的用户的信息，然后设置为curUser
+  axios.get('https://api.devscope.search.ren/github/user/info?username=' + user.login)
+    .then(res => {
+    // console.log('user res.data', res.data)
+    if (res.data.code !== 200) {
+      ElNotification({
+        title: 'Attention',
+        message: 'There is no such user!',
+        type: 'warning',
+        position: 'top-right',
+        offset: 60
+      })
+    } else {
+      let api_user = res.data.user
+      // 空数据填充N/A
+      for (let item in api_user) {
+        if (api_user[item] === null || api_user[item] === '' || api_user[item] === undefined) {
+          api_user[item] = 'N/A'
+        }
+      }
+
+      // construct field 'Position'
+      axios.get('https://api.devscope.search.ren/github/user/nation?username=' + user.login)
+        .then(res2 => {
+          // console.log('positon res.data', res2.data)
+          if (res2.data.code !== 200) {
+            ElNotification({
+              title: 'Attention',
+              message: 'There is no such user!',
+              type: 'warning',
+              position: 'top-right',
+              offset: 60
+            })
+          } else {
+            // get the nation
+            api_user['position'] = res2.data.nation
+
+            // 往userStore.ts更新获取的user信息
+            userStore.setUserInfo(JSON.stringify(api_user))
+            let user = allocateMember(api_user)
+            curUser = user
+            console.log('curUser',curUser)
+
+            state.reRendering = false
+            nextTick(() => {
+              state.reRendering = true
+            })
+          }
+        })
+        .catch(err => {
+          console.log('err', err)
+        })
+      }
+    })
+    .catch(err => {
+      console.log('err', err)
+    })
+}
+
 onBeforeMount(() => {
-  // 构造用户信息
-  let tmp = userStore.getUserList() // string array
-  for(let i=0;i<tmp.length;i++){
-    let user = allocateMember(JSON.parse(tmp[i]))
-    userList.push(user)
-  }
-  console.log('userList', userList)
-  curUser = userList[0]
+  let tmp = userStore.getUserInfo() // searched user
+  let user = allocateMember(JSON.parse(tmp))
+  curUser = user
   
   // 构造top3
   state.top3List.push(top1, top2, top3)
 })
 
-const selectUser = (user: UserItem) => {
-  // 指定所选元素
-  curUser = allocateMember(user)
-  console.log('curUser', curUser)
-}
+watch(
+  () => curUser.login,
+  (newVal, oldVal) => {
+    console.log('newVal', newVal)
+    console.log('oldVal', oldVal)
+    state.reRendering = false
+    nextTick(() => {
+      state.reRendering = true
+    })
+  }
+)
 
 </script>
 
 <template>
   <div class="outer_box">
     <!-- 列表(按领域搜索时显示) -->
-    <div class="list_box" v-show="searchStore.getSearchMode()">
-    <!-- <div class="list_box"> -->
+    <!-- <div class="list_box" v-show="searchStore.getSearchMode()"> -->
+    <div class="list_box">
       <div class="list_title">
         TalentRank
       </div>
-      <div class="list_content" v-for="(item, index) in userList" :key="index" :label="item" :value="item" @click="selectUser(item)">
+      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()" :key="index" :label="item" :value="item" @click="selectUser(item)">
         <!--排名图标（top 3）-->
         <img class="image" v-if="index<3" :src="state.top3List[index]" alt=""/>
         <!--排名数字（others）-->
         <div class="number" v-else>{{ index + 1 }}</div>
-        <div class="username">{{ item.name }}</div>
-        <img class="image" :src="item.avatar_url" alt=""/>
+        <div class="username">{{ item.login }}</div>
+        <!-- <img class="image" :src="item.avatar_url" alt=""/> -->
       </div>
     </div>
 
@@ -120,7 +185,7 @@ const selectUser = (user: UserItem) => {
     <div class="body_box">
       <div>
         <!-- info -->
-        <div class="info_box">
+        <div class="info_box" v-if="state.reRendering">
           <div class="base_info">
             <div class="amatar_box">
               <img class="avatar" :src="curUser.avatar_url" alt=""/>
@@ -182,7 +247,7 @@ const selectUser = (user: UserItem) => {
         <div class="rank_box">
           <div class="base_box">
             <div class="rank_title">Talent Rank</div>
-            <RadarChart class="radar_chart" :data="curUser.login" />
+            <RadarChart class="radar_chart" :data="curUser.login" v-if="state.reRendering"/>
             <BarChart class="bar_chart" />
             <LineChart class="line_chart" />
           </div>
@@ -206,7 +271,7 @@ const selectUser = (user: UserItem) => {
 
   .list_box{
     width: 20%;
-    height: auto;
+    height: 95%;
 
     padding: 10px;
     border-radius: 10px;
@@ -215,10 +280,17 @@ const selectUser = (user: UserItem) => {
 
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
 
     margin-right: 10px;
+    
+    // overflow scrolling
+    overflow-x: hidden;
+    overflow-y: scroll;
+    &::-webkit-scrollbar {
+      width: 0; // hidden scrollbar
+    }
 
     .list_title{
       width: 100%;
