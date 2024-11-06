@@ -15,7 +15,7 @@ const userStore = useUserStore()
 
 const changeSearchMode = async () => {
   await searchStore.changeSearchMode()
-  console.log('current mode value: ' + searchStore.state.mode)
+  console.log('current mode value: ' + searchStore.getSearchMode())
 }
 
 // define object class
@@ -33,7 +33,7 @@ let talentRankList = reactive<TalentRank[]>(new Array())
 
 onBeforeMount(() => {
   // 1.获取TalentRank数据
-  axios.get('https://api.devscope.search.ren/rank/list?page=' + '1' + '&pageSize=' + '50')
+  axios.get('https://api.devscope.search.ren/rank/list?page=' + '1' + '&pageSize=' + '100')
     .then(res => {
       console.log('rank list data', res.data)
       if (res.data.code !== 200) {

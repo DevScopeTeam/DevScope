@@ -70,7 +70,7 @@ const SetChart = () => {
 
     // 2.construct series data
     const seriesData = [] as any[]
-    for (let i = 0; i < (userStore.getTalentRankList()).length; i++) {
+    for (let i = 0; i < 10; i++) {
       const obj = {
         name: (userStore.getTalentRankList())[i].login,
         type: 'bar',
