@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { onBeforeMount, reactive, watch, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
-import { ElSkeleton, ElSkeletonItem } from 'element-plus'
 import { useSearchStore } from '@/stores/searchStore'
 import { useUserStore } from '@/stores/userStore'
 import position from '@/assets/image/position.png'
@@ -16,11 +14,11 @@ import RadarChart from '@/components/RadarChart.vue'
 import BarChart from '@/components/BarChart.vue'
 import LineChart from '@/components/LineChart.vue'
 import { type UserItem } from '@/types/UserItem'
-import { type TalentRank } from '@/types/TalentRank'
-import axios from 'axios'
-import { ElNotification } from 'element-plus'
-
-const route = useRoute() // 使用路由
+import { type DeveloperRank } from '@/types/TalentRank'
+import { api } from '@/api/index'
+import { handleNetworkError } from '@/utils/request/RequestTools'
+import type { UserInfo } from '@/types/info'
+import { ElSkeleton, ElSkeletonItem } from 'element-plus'
 
 /* 使用pinia的数据，实现父子组件通信 */
 const userStore = useUserStore()
@@ -35,6 +33,7 @@ const state = reactive({
 // define object class
 class userInfoClass {
 	id = 0
+  nodeid = ""
   avatar_url = ''
   name = ''
   login = ''
@@ -47,20 +46,7 @@ class userInfoClass {
   bio = ''
 }
 // define userinfo object
-let curUser = reactive<UserItem>(new userInfoClass())
-let userList = reactive<UserItem[]>(new Array())
-
-// define object class
-class TalentRankClass {
-  id = 0
-  login = ''
-  nation = ''
-  project = 0
-  code = 0
-  influence = 0
-  overall = 0
-}
-let talentRank = reactive<TalentRank>(new TalentRankClass())
+let curUser = reactive<UserInfo>(new userInfoClass())
 
 // allocate member of UserItem
 const allocateMember = (input: UserItem) => {
@@ -79,76 +65,53 @@ const allocateMember = (input: UserItem) => {
   return user
 }
 
-// const selectUser = (user: UserItem) => {
-const selectUser = (user: TalentRank) => {
-  // 根据选择的用户的login，去调用api获取新的用户的信息，然后设置为curUser
-  axios.get('https://api.devscope.search.ren/github/user/info?username=' + user.login)
-    .then(res => {
-    // console.log('user res.data', res.data)
-    if (res.data.code !== 200) {
-      ElNotification({
-        title: 'Attention',
-        message: 'There is no such user!',
-        type: 'warning',
-        position: 'top-right',
-        offset: 60
-      })
-    } else {
-      let api_user = res.data.user
-      // 空数据填充N/A
-      for (let item in api_user) {
-        if (api_user[item] === null || api_user[item] === '' || api_user[item] === undefined) {
-          api_user[item] = 'N/A'
-        }
-      }
+async function refreshUserInfo(username: string) {
+  const [err, data] = await api.getInfo(username)
+  if (err) handleNetworkError(err)
+  if (!data || !data?.user) return
+  const api_user = data.user;
+  console.log('info', api_user);
 
-      // construct field 'Position'
-      axios.get('https://api.devscope.search.ren/github/user/nation?username=' + user.login)
-        .then(res2 => {
-          // console.log('positon res.data', res2.data)
-          if (res2.data.code !== 200) {
-            ElNotification({
-              title: 'Attention',
-              message: 'There is no such user!',
-              type: 'warning',
-              position: 'top-right',
-              offset: 60
-            })
-          } else {
-            // get the nation
-            api_user['position'] = res2.data.nation
+  const [err2, nation_data] = await api.getNation(username)
+  if (err2) handleNetworkError(err2)
+  if (api_user.location == "" || api_user.location == "Unknown") {
+    api_user.location = "N/A"
+  }
 
-            // 往userStore.ts更新获取的user信息
-            userStore.setUserInfo(JSON.stringify(api_user))
-            let user = allocateMember(api_user)
-            curUser = user
-            console.log('curUser',curUser)
+  // 将空的内容设置为N/A
+  if (api_user.name == "") api_user.name = "N/A"
+  if (api_user.company == "") api_user.company = "N/A"
+  if (api_user.url == "") api_user.company = "N/A"
+  if (api_user.blog == "") api_user.blog = "N/A"
+  if (api_user.email == "") api_user.email = "N/A"
+  if (api_user.bio == "") api_user.bio = "N/A"
 
-            state.reRendering = false
-            nextTick(() => {
-              state.reRendering = true
-            })
-          }
-        })
-        .catch(err => {
-          console.log('err', err)
-        })
-      }
-    })
-    .catch(err => {
-      console.log('err', err)
-    })
+  // 往userStore.ts更新获取的user信息
+  userStore.setUserInfo(JSON.stringify(api_user))
+  curUser = api_user
+  console.log('curUser', curUser)
+
+  state.reRendering = false
+  nextTick(() => {
+    state.reRendering = true
+  })
+
+  return [err2, api_user]
 }
 
-onBeforeMount(() => {
+const selectUser = async (user: DeveloperRank) => {
+  console.log('user', user)
+
+  refreshUserInfo(user.username)
+}
+
+onBeforeMount(async () => {
   if (searchStore.getSearchMode()) { // 领域模式
     // 根据领域的talentRankList的第一个元素的username，搜索该用户的基本信息
-    // console.log('test', (userStore.getTalentRankList()))
     selectUser((userStore.getTalentRankList())[0])
   } else { // 普通模式
-    let tmp = userStore.getUserInfo() // searched user
-    let user = allocateMember(JSON.parse(tmp))
-    curUser = user
+    const user = allocateMember(JSON.parse(userStore.getUserInfo()))
+    refreshUserInfo(user.login)
   }
   
   // 构造top3
@@ -176,13 +139,14 @@ watch(
       <div class="list_title">
         TalentRank
       </div>
-      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()" :key="index" :label="item" :value="item" @click="selectUser(item)">
+      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()" 
+        :key="index" :label="item" :value="item" @click="selectUser(item)">
         <!--排名图标（top 3）-->
-        <img class="image" v-if="index<3" :src="state.top3List[index]" alt=""/>
+        <img class="image" v-if="index < 3" :src="state.top3List[index]" alt=""/>
         <!--排名数字（others）-->
         <div class="number" v-else>{{ index + 1 }}</div>
-        <div class="username">{{ item.login }}</div>
-        <div class="score">{{ item.overall }}</div>
+        <div class="username">{{ item.username }}</div>
+        <div class="score">{{ item.overall.toFixed(2) }}</div>
       </div>
     </div>
 
@@ -204,12 +168,12 @@ watch(
           <div class="company_info">
             <div class="group_box">
               <img class="icon" :src="position" alt=""/>
-              <el-tooltip :content="curUser.position" placement="bottom" effect="light">
-                <div class="position">{{ curUser.position }}</div>
-              </el-tooltip>
               <el-tooltip :content="curUser.location" placement="bottom" effect="light">
-                <div class="location">{{ curUser.location }}</div>
+                <div class="position">{{ curUser.location }}</div>
               </el-tooltip>
+              <!-- <el-tooltip :content="curUser.location" placement="bottom" effect="light">
+                <div class="location">{{ curUser.location }}</div>
+              </el-tooltip> -->
             </div>
             <div class="group_box">
               <img class="icon" :src="company" alt=""/>
@@ -276,7 +240,7 @@ watch(
 
   .list_box{
     width: 20%;
-    height: 725px;
+    height: 95%;
 
     padding: 10px;
     border-radius: 10px;

@@ -1,13 +1,11 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
-import { type TalentRank } from '@/types/TalentRank'
+import { type DeveloperRank } from '@/types/TalentRank'
 
 export const useUserStore = defineStore('userStore', () => {  
   const state = reactive({
     user: '', // 用户信息对象（按username搜索）
-    // userList: [] as string[] // 用户列表
   })
-//   const user = reactive<UserObject>({})
 
   // 获取单个用户信息
   const getUserInfo = () => {
@@ -33,14 +31,15 @@ export const useUserStore = defineStore('userStore', () => {
   class TalentRankClass {
     id = 0
     login = ''
+    username = ''
     nation = ''
     project = 0
     code = 0
     influence = 0
     overall = 0
   }
-  let curTalentRank = reactive<TalentRank>(new TalentRankClass())
-  let curTalentRankList = reactive<TalentRank[]>(new Array())
+  let curTalentRank = reactive<DeveloperRank>(new TalentRankClass())
+  let curTalentRankList = reactive<DeveloperRank[]>([])
 
   // 获取talentRank
   const getTalentRank = () => {
@@ -48,7 +47,7 @@ export const useUserStore = defineStore('userStore', () => {
   }
 
   // 设置talentRank
-  const setTalentRank = (newTalentRank: TalentRank) => {
+  const setTalentRank = (newTalentRank: DeveloperRank) => {
     curTalentRank = newTalentRank
   }
 
@@ -58,7 +57,7 @@ export const useUserStore = defineStore('userStore', () => {
   }
 
   // 设置talentRankList
-  const setTalentRankList = (newTalentRankList: TalentRank[]) => {
+  const setTalentRankList = (newTalentRankList: DeveloperRank[]) => {
     curTalentRankList = newTalentRankList
   }
 

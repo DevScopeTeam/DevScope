@@ -4,11 +4,12 @@ import TitleLogo from '@/components/TitleLogo.vue'
 import Switch from '@/components/Switch.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import { onBeforeMount, reactive } from 'vue'
-import axios from 'axios'
-import { type TalentRank } from '@/types/TalentRank'
+import { type DeveloperRank } from '@/types/TalentRank'
 import { ElNotification } from 'element-plus'
 import { useUserStore } from '@/stores/userStore'
 import { useFieldStore } from '@/stores/fieldStore'
+import { api } from '@/api'
+import { handleNetworkError } from '@/utils/request/RequestTools'
 
 /* 实现父子组件通信(搜索模式切换) */
 const searchStore = useSearchStore() // 使用pinia的数据
@@ -20,98 +21,27 @@ const changeSearchMode = async () => {
   console.log('current mode value: ' + searchStore.getSearchMode())
 }
 
-// define object class
-class TalentRankClass {
-  id = 0
-  login = ''
-  nation = ''
-  project = 0
-  code = 0
-  influence = 0
-  overall = 0
-}
-let talentRank = reactive<TalentRank>(new TalentRankClass())
-let talentRankList = reactive<TalentRank[]>(new Array())
+let talentRankList = reactive<DeveloperRank[]>([])
 
-onBeforeMount(() => {
-  // 1.获取TalentRank数据
-  axios.get('https://api.devscope.search.ren/rank/list?page=' + '1' + '&pageSize=' + '100')
-    .then(res => {
-      console.log('rank list data', res.data)
-      if (res.data.code !== 200) {
-        ElNotification({
-          title: 'Attention',
-          message: 'There is no user in ranking!',
-          type: 'warning',
-          position: 'top-right',
-          offset: 60
-        })
-      } else {
-        if (res.data.list.length <= 0) {
-          ElNotification({
-            title: 'Attention',
-            message: 'There is no rank data!',
-            type: 'warning',
-            position: 'top-right',
-            offset: 60
-          })
-        } else {
-          // 构造TalentRank数据
-          for (let i=0; i<res.data.list.length; i++) {
-            talentRank.login = res.data.list[i].username
-            talentRank.project = res.data.list[i].project.toFixed(2)
-            talentRank.code = res.data.list[i].code.toFixed(2)
-            talentRank.influence = res.data.list[i].influence.toFixed(2)
-            talentRank.overall = res.data.list[i].overall.toFixed(2)
-            talentRank.nation = res.data.list[i].nation
-            talentRankList.push(talentRank)
-                
-            // clear the talentRank
-            talentRank = reactive<TalentRank>(new TalentRankClass())
-          }
-              
-          // 往userStore.ts更新获取的talentRankList信息
-          userStore.setTalentRankList(talentRankList)
-          console.log('the talentRankList', userStore.getTalentRankList())
+onBeforeMount(async () => {
+  // 获取TalentRank数据
+  const [err, data] = await api.listRank(1, 50)
+  if (err) handleNetworkError(err)
+  if (!data || !data?.list) return
+  talentRankList = data.list
 
-          // 2.获取领域列表数据
-          axios.get('https://api.devscope.search.ren/tag/list')
-            .then(res => {
-              console.log('field data', res.data)
-              if (res.data.code !== 200) {
-                ElNotification({
-                  title: 'Attention',
-                  message: 'There is no field!',
-                  type: 'warning',
-                  position: 'top-right',
-                  offset: 60
-                })
-              } else {
-                if (res.data.list.length <= 0) {
-                  ElNotification({
-                    title: 'Attention',
-                    message: 'There is no field data!',
-                    type: 'warning',
-                    position: 'top-right',
-                    offset: 60
-                  })
-                } else {
-                  fieldStore.setFieldList(res.data.list)
-                  console.log('field list', fieldStore.getFieldList())
-                }
-              }
-            })
-            .catch(err => {
-              console.log('err', err)
-            })
-        }
-      }
-    })
-    .catch(err => {
-      console.log('err', err)
-    })
+  // 更新talentRankList
+  userStore.setTalentRankList(talentRankList);
+
+  const [err2, data2] = await api.listTag()
+  if (err2) handleNetworkError(err2)
+  if (!data2 || !data2?.list) return
+  let tagList = data2.list
+  
+  // 领域列表存入store
+  fieldStore.setFieldList(tagList)
+  console.log('field list', fieldStore.getFieldList())
 })
-
 </script>
 
 <template>

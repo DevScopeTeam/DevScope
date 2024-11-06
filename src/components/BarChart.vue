@@ -1,40 +1,10 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import { reactive, defineProps, watch, ref, nextTick, onBeforeMount, onMounted } from 'vue'
+import { reactive, ref, nextTick, onBeforeMount, onMounted } from 'vue'
 import * as echarts from 'echarts'
-import { type TalentRank } from '@/types/TalentRank'
-import axios from 'axios'
-import { useSearchStore } from '@/stores/searchStore'
 import { useUserStore } from '@/stores/userStore'
-import { ElNotification } from 'element-plus'
 
-interface Props {
-  // data: TalentRank
-  // data: string
-}
-const props = defineProps<Props>()
-
-const searchStore = useSearchStore()
 const userStore = useUserStore()
-
-// define object class
-class TalentRankClass {
-  id = 0
-  login = ''
-  nation = ''
-  project = 0
-  code = 0
-  influence = 0
-  overall = 0
-}
-let talentRank = reactive<TalentRank>(new TalentRankClass())
-let talentRankList = reactive<TalentRank[]>(new Array())
-
-// watch(
-//   () => props.data,
-//   (newVal, oldVal) => {
-//       SetChart()
-//   }
-// )
 
 const state = reactive({
   chartData: [] as any[],
@@ -76,7 +46,7 @@ const SetChart = () => {
         break;
       } else {
         const obj = {
-          name: (userStore.getTalentRankList())[i].login,
+          name: (userStore.getTalentRankList())[i].username,
           type: 'bar',
           stack: 'As', // stack
           emphasis: { // the highlight style when the mouse hovers over the column
@@ -95,10 +65,10 @@ const SetChart = () => {
     // 3.stack datas
     userStore.getTalentRankList().forEach((v1) => {
       seriesData.forEach((v2) => {
-        if (v2.name === v1.login) {
-          v2.data[0] = v1.project
-          v2.data[1] = v1.code
-          v2.data[2] = v1.influence
+        if (v2.name === v1.username) {
+          v2.data[0] = Number(v1.project.toFixed(2))
+          v2.data[1] = Number(v1.code.toFixed(2))
+          v2.data[2] = Number(v1.influence.toFixed(2))
         }
       })
     })
