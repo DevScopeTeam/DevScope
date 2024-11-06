@@ -35,9 +35,9 @@ export const useUserStore = defineStore('userStore', () => {
     login = ''
     username = ''
     nation = ''
-    projectImportance = 0
-    codeContribution = 0
-    communityInfluence = 0
+    project = 0
+    code = 0
+    influence = 0
     overall = 0
   }
   let curTalentRank = reactive<DeveloperRank>(new TalentRankClass())
