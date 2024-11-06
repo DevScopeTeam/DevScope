@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { useSearchStore } from '@/stores/searchStore'
-import { useUserStore } from '@/stores/userStore'
-import search from '@/assets/image/search.png'
-import search_black from '@/assets/image/search_black.png'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import { ElNotification } from 'element-plus'
 import { defineProps } from 'vue'
-import { type TalentRank } from '@/types/TalentRank'
+import { type DeveloperRank } from '@/types/TalentRank'
+import { useSearchStore } from '@/stores/searchStore'
+import { useUserStore } from '@/stores/userStore'
+import { useFieldStore } from '@/stores/fieldStore'
+import search from '@/assets/image/search.png'
+import search_black from '@/assets/image/search_black.png'
+import { api } from '@/api/index'
+import { handleNetworkError } from '@/utils/request/RequestTools'
 
 interface Props {
   inputWidth: number
@@ -26,126 +28,142 @@ const router = useRouter() // 使用路由
 /* 使用pinia的数据，实现父子组件通信 */
 const searchStore = useSearchStore()
 const userStore = useUserStore()
-
-// define object class
-class TalentRankClass {
-  id = 0
-  login = ''
-  nation = ''
-  project = 0
-  code = 0
-  influence = 0
-  overall = 0
-}
-let talentRank = reactive<TalentRank>(new TalentRankClass())
-let talentRankList = reactive<TalentRank[]>(new Array())
+const fieldStore = useFieldStore()
 
 /* 暂存用户信息列表 */
 const state = reactive({
-  // arr: [] as string[]
+  uuid: ''
 })
 
-const goSearch = () => {
-  // await userStore.changeSearchMode()
-  console.log('current search content: ' + searchStore.state.searchContent)
+// const goSearch = async () => {
+async function goSearch () {
+  // console.log('current search content: ' + searchStore.getSearchContent()) // username / nation
+  // console.log('current field content: ' + state.uuid)
 
-  if (searchStore.checkIfEmpty() === true) {
-    // 区分普通搜索\领域搜索
-    if (searchStore.getSearchMode() === true) {
-      // TODO ...领域搜索
+  // 区分普通搜索\领域搜索
+  if (searchStore.getSearchMode() === true) {
+    // 领域搜索
 
-
-      // axios.get('')
-      //   .then(res => {
-      //     // console.log('userinfo', JSON.stringify(res.data.user))
-
-      //     // // 往userStore.ts更新获取的user信息
-      //     // userStore.setUserInfo(JSON.stringify(res.data.user))
-
-      //     // // 跳转到ListView
-      //     // router.push({
-      //     //   path: '/list'
-      //     // })
-      //   })
-      //   .catch(err => {
-      //     console.log('err', err)
-      //   })
+    if(state.uuid === ''){
+      ElNotification({
+        title: 'Attention',
+        message: 'Please enter the content to search!',
+        type: 'warning',
+        position: 'top-right',
+        offset: 60
+      })
     } else {
-      // 普通搜索(开始调用排名列表，然后调用userinfo，再建立关联)
-      axios.get('https://api.devscope.search.ren/github/user/info?username=' + searchStore.state.searchContent)
-        .then(res => {
-          // console.log('user res.data', res.data)
-          if (res.data.code !== 200) {
-            ElNotification({
-              title: 'Attention',
-              message: 'There is no such user!',
-              type: 'warning',
-              position: 'top-right',
-              offset: 60
-            })
-          } else {
-            let api_user = res.data.user
-            // 空数据填充N/A
-            for (let item in api_user) {
-              if (api_user[item] === null || api_user[item] === '' || api_user[item] === undefined) {
-                api_user[item] = 'N/A'
-              }
-            }
-
-            // construct field 'Position'
-            axios.get('https://api.devscope.search.ren/github/user/nation?username=' + searchStore.state.searchContent)
-            .then(res2 => {
-              // console.log('positon res.data', res2.data)
-              if (res2.data.code !== 200) {
-                ElNotification({
-                  title: 'Attention',
-                  message: 'There is no such user!',
-                  type: 'warning',
-                  position: 'top-right',
-                  offset: 60
-                })
-              } else {
-                // get the nation
-                api_user['position'] = res2.data.nation
-
-                // 往userStore.ts更新获取的user信息
-                userStore.setUserInfo(JSON.stringify(api_user))
-
-                // jump to the ListView
-                router.push({
-                  path: '/list'
-                })
-              }
-            })
-            .catch(err => {
-              console.log('err', err)
-            })
+      // 1.调用api，获取指定领域的所有用户排名
+      const [err, data] = await api.listDomainRank(state.uuid, 1, 100)
+      if (err) handleNetworkError(err)
+      if (!data || !data?.list) return
+      let rankList = data.list
+      
+      // 2.若有选择nation，则从step2的返回结果中筛选指定nation的用户
+      let tmpList = reactive<DeveloperRank[]>([])
+      if (searchStore.checkIfEmpty()) { // 输入nation搜索
+        rankList.forEach((v) => {
+          if (v.nation === searchStore.getSearchContent()) {
+            tmpList.push(v) // 筛选是指定nation的用户
           }
         })
-        .catch(err => {
-          console.log('err', err)
+      } else { // 未输入nation搜索
+        tmpList = rankList
+      }
+
+      // 3.往userStore.ts更新获取的talentRankList信息
+      userStore.setTalentRankList(tmpList)
+      console.log('TalentRank List', userStore.getTalentRankList())
+
+      if (tmpList.length > 0) {
+        // 4.jump to the ListView
+        router.push({
+          path: '/list'
         })
+      } else {
+        ElNotification({
+          title: 'Attention',
+          message: 'There is no such user!',
+          type: 'warning',
+          position: 'top-right',
+          offset: 60
+        })
+      }
     }
   } else {
-    ElNotification({
-      title: 'Attention',
-      message: 'Please enter the content to search!',
-      type: 'warning',
-      position: 'top-right',
-      offset: 60
-    })
+    // 普通搜索
+    if (searchStore.checkIfEmpty()) {
+      const [err, data] = await api.getInfo(searchStore.state.searchContent)
+      if (err) handleNetworkError(err)
+      if (!data || !data?.user) return
+      const api_user = data.user;
+      console.log('info', api_user);
+
+      const [err2, nation_data] = await api.getNation(searchStore.state.searchContent)
+      if (err2) handleNetworkError(err2)
+      if (api_user.location == "" || api_user.location == "Unknown") {
+        api_user.location = "N/A"
+      }
+
+      // 将空的内容设置为N/A
+      if (api_user.name == "") api_user.name = "N/A"
+      if (api_user.company == "") api_user.company = "N/A"
+      if (api_user.url == "") api_user.company = "N/A"
+      if (api_user.blog == "") api_user.blog = "N/A"
+      if (api_user.email == "") api_user.email = "N/A"
+      if (api_user.bio == "") api_user.bio = "N/A"
+
+      // 往userStore.ts更新获取的user信息
+      userStore.setUserInfo(JSON.stringify(api_user))
+      console.log(userStore.getUserInfo())
+      
+      // 3.jump to the ListView
+      router.push({
+        path: '/list'
+      })
+    } else {
+      ElNotification({
+        title: 'Attention',
+        message: 'Please enter the content to search!',
+        type: 'warning',
+        position: 'top-right',
+        offset: 60
+      })
+    }
   }
 }
 </script>
 
 <template>
   <div class="outer_box">
-    <el-input class="input" 
-      :style="{width:props.inputWidth+props.inputWidthUnit, height:props.inputHeight+props.inputHeightUnit}"
-      placeholder="Enter what you want to know."
-      v-model="searchStore.state.searchContent">
-    </el-input>
+    <!-- 领域搜索 -->
+    <div v-if="searchStore.getSearchMode()" class="input_box">
+      <el-input class="input" 
+        :style="{width:props.inputWidth+props.inputWidthUnit, height:props.inputHeight+props.inputHeightUnit}"
+        placeholder="Enter a nation."
+        v-model="searchStore.state.searchContent">
+      </el-input>
 
+      <el-select class="field"
+        :style="{width:(100-15-props.inputWidth)+props.inputWidthUnit, height:props.inputHeight+props.inputHeightUnit}"  
+        v-model="state.uuid"
+        placeholder="Choose a field."
+        clearable
+        ref="category">
+        <el-option v-for="(item, index) in fieldStore.getFieldList()" :key="index" :label="item.name" :value="item.uuid"/>
+      </el-select>
+    </div>
+
+    <!-- 普通搜索 -->
+    <div v-else class="input_box">
+      <el-input class="input" 
+        :style="{width:props.inputWidth+props.inputWidthUnit, height:props.inputHeight+props.inputHeightUnit}"
+        placeholder="Enter an username."
+        v-model="searchStore.state.searchContent">
+      </el-input>
+    </div>
+
+    <!-- 共用的搜索图标 -->
     <div class="button">
       <img class="icon" :style="{width:props.iconWidth+'px', height:props.iconHeight+'px'}" 
         :src="props.image===0 ? search : search_black" alt="" @click="goSearch()"/>
@@ -164,13 +182,39 @@ const goSearch = () => {
   justify-content: center;
   align-items: center;
 
+  /* 按领域搜索的输入框 */
+  .input_box{
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    .input{
+      padding-right: 10px;
+    }
+
+    /* 自定义el-select内部样式 */
+    :deep(.el-select__wrapper) { /* 外框 */
+      height: 60px;
+
+      border-radius: 40px;
+      padding-left: 30px;
+      letter-spacing: 1px;
+      font-size: 16px;
+      font-weight: 400;
+    }
+  }
+
   /* 自定义el-input内部样式 */
   :deep(.el-input__wrapper) { /* 外框 */
     border-radius: 40px;
   }
   :deep(.el-input__inner) { /* 输入区域 */
-    margin: 0 20px;
-    font-size: 18px;
+    margin: 0 10px;
+    font-size: 16px;
     letter-spacing: 2px;
     font-weight: 400;
   }
