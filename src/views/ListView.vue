@@ -273,24 +273,9 @@ watch(
       flex-direction: column;
       justify-content: center;
       align-items: center;
-
-      // // fixed at the top
-      // position: -webkit-sticky;
-      // position: sticky;
-      // top: 0;
-      // z-index: 9999;
     }
 
-    .list_content:nth-child(1) {
-      border-radius: 0 0 6px 6px;
-      margin-top: 50px;
-    }
-
-    .list_content:not(:first-child) {
-      border-radius: 6px;
-    }
-
-    .list_content {
+    .list_content{
       width: 100%;
       height: 45px;
 
@@ -302,6 +287,8 @@ watch(
       flex-direction: row;
       justify-content: center;
       align-items: center;
+
+      margin-bottom: 3px;
 
       margin-bottom: 3px;
 
@@ -319,8 +306,8 @@ watch(
         color: #000000;
       }
 
-      .username {
-        width: 55%;
+      .username{
+        width: 65%;
         height: 100%;
 
         display: flex;
@@ -339,18 +326,6 @@ watch(
 
         padding: 5px;
         margin-right: 5px;
-        text-align: center;
-      }
-
-      .score {
-        width: 15%;
-        height: 100%;
-
-        padding: 5px;
-        margin-top: 10px;
-
-        color: rgb(59, 59, 79);
-        font-family: TsangerYuYangT_W05_W05;
       }
     }
   }
