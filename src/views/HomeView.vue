@@ -8,10 +8,12 @@ import axios from 'axios'
 import { type TalentRank } from '@/types/TalentRank'
 import { ElNotification } from 'element-plus'
 import { useUserStore } from '@/stores/userStore'
+import { useFieldStore } from '@/stores/fieldStore'
 
 /* 实现父子组件通信(搜索模式切换) */
 const searchStore = useSearchStore() // 使用pinia的数据
 const userStore = useUserStore()
+const fieldStore = useFieldStore()
 
 const changeSearchMode = async () => {
   await searchStore.changeSearchMode()
@@ -39,7 +41,7 @@ onBeforeMount(() => {
       if (res.data.code !== 200) {
         ElNotification({
           title: 'Attention',
-          message: 'There is no user!',
+          message: 'There is no user in ranking!',
           type: 'warning',
           position: 'top-right',
           offset: 60
@@ -61,6 +63,7 @@ onBeforeMount(() => {
             talentRank.code = res.data.list[i].code.toFixed(2)
             talentRank.influence = res.data.list[i].influence.toFixed(2)
             talentRank.overall = res.data.list[i].overall.toFixed(2)
+            talentRank.nation = res.data.list[i].nation
             talentRankList.push(talentRank)
                 
             // clear the talentRank
@@ -70,6 +73,37 @@ onBeforeMount(() => {
           // 往userStore.ts更新获取的talentRankList信息
           userStore.setTalentRankList(talentRankList)
           console.log('the talentRankList', userStore.getTalentRankList())
+
+          // 2.获取领域列表数据
+          axios.get('https://api.devscope.search.ren/tag/list')
+            .then(res => {
+              console.log('field data', res.data)
+              if (res.data.code !== 200) {
+                ElNotification({
+                  title: 'Attention',
+                  message: 'There is no field!',
+                  type: 'warning',
+                  position: 'top-right',
+                  offset: 60
+                })
+              } else {
+                if (res.data.list.length <= 0) {
+                  ElNotification({
+                    title: 'Attention',
+                    message: 'There is no field data!',
+                    type: 'warning',
+                    position: 'top-right',
+                    offset: 60
+                  })
+                } else {
+                  fieldStore.setFieldList(res.data.list)
+                  console.log('field list', fieldStore.getFieldList())
+                }
+              }
+            })
+            .catch(err => {
+              console.log('err', err)
+            })
         }
       }
     })
@@ -90,8 +124,14 @@ onBeforeMount(() => {
     <div class="search_box">
       <!-- 切换搜索模式 -->
       <Switch class="switch" @click="changeSearchMode"/>
-      <!-- 搜索区域 -->
-      <SearchBar class="search_bar" :inputWidth="85" :inputWidthUnit="'%'" :inputHeight="60" :inputHeightUnit="'px'" 
+      
+      <!-- 领域搜索区域 -->
+      <SearchBar v-if="searchStore.getSearchMode()" class="search_bar" 
+        :inputWidth="45" :inputWidthUnit="'%'" :inputHeight="60" :inputHeightUnit="'px'" 
+        :image="0" :iconWidth="40" :iconHeight="40"/>
+      <!-- 普通搜索区域 -->
+      <SearchBar v-else class="search_bar" 
+        :inputWidth="85" :inputWidthUnit="'%'" :inputHeight="60" :inputHeightUnit="'px'" 
         :image="0" :iconWidth="40" :iconHeight="40"/>
     </div>
   </div>

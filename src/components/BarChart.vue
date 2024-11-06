@@ -70,21 +70,26 @@ const SetChart = () => {
 
     // 2.construct series data
     const seriesData = [] as any[]
-    for (let i = 0; i < 10; i++) {
-      const obj = {
-        name: (userStore.getTalentRankList())[i].login,
-        type: 'bar',
-        stack: 'As', // stack
-        emphasis: { // the highlight style when the mouse hovers over the column
-          focus: 'series'
-        },
-        label: {
-          show: true,
-          fontSize: 10
-        },
-        data: []
+    for (let i = 0; i < (userStore.getTalentRankList()).length; i++) {
+      // 最多显示10个用户的数据
+      if (i === 10) {
+        break;
+      } else {
+        const obj = {
+          name: (userStore.getTalentRankList())[i].login,
+          type: 'bar',
+          stack: 'As', // stack
+          emphasis: { // the highlight style when the mouse hovers over the column
+            focus: 'series'
+          },
+          label: {
+            show: true,
+            fontSize: 10
+          },
+          data: []
+        }
+        seriesData.push(obj)
       }
-      seriesData.push(obj)
     }
 
     // 3.stack datas

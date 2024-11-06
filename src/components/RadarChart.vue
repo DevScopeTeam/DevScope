@@ -51,8 +51,8 @@ onBeforeMount(() => {
         if (res.data.code !== 200) {
           ElNotification({
             title: 'Attention',
-            message: 'There is no such user!',
-            type: 'warning',
+            message: 'Please waiting...',
+            type: 'info',
             position: 'top-right',
             offset: 60
           })

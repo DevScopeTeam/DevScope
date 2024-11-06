@@ -141,9 +141,15 @@ const selectUser = (user: TalentRank) => {
 }
 
 onBeforeMount(() => {
-  let tmp = userStore.getUserInfo() // searched user
-  let user = allocateMember(JSON.parse(tmp))
-  curUser = user
+  if (searchStore.getSearchMode()) { // 领域模式
+    // 根据领域的talentRankList的第一个元素的username，搜索该用户的基本信息
+    // console.log('test', (userStore.getTalentRankList()))
+    selectUser((userStore.getTalentRankList())[0])
+  } else { // 普通模式
+    let tmp = userStore.getUserInfo() // searched user
+    let user = allocateMember(JSON.parse(tmp))
+    curUser = user
+  }
   
   // 构造top3
   state.top3List.push(top1, top2, top3)
@@ -166,7 +172,6 @@ watch(
 <template>
   <div class="outer_box">
     <!-- 列表 -->
-    <!-- <div class="list_box" v-show="searchStore.getSearchMode()"> -->
     <div class="list_box">
       <div class="list_title">
         TalentRank
