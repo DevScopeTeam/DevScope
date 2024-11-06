@@ -12,5 +12,4 @@ function listTag(): Promise<[any, TagListResp | undefined]> {
   return Get(Api.List);
 }
 
-
 export const tagApis = { listTag };

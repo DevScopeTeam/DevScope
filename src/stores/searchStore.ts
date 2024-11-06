@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 export const useSearchStore = defineStore('searchStore', () => {
   const state = reactive({
     mode: false, // 是否按领域搜索
-    searchContent: '' // 搜索的内容
+    searchContent: '' // 搜索的内容(username / nation)
   })
 
   // 获取搜索的内容
@@ -16,6 +16,7 @@ export const useSearchStore = defineStore('searchStore', () => {
   const changeSearchMode = () => {
     state.mode = !state.mode
   }
+
 
   // 获取搜索的内容
   const getSearchContent = () => {

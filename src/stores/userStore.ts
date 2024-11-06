@@ -5,9 +5,7 @@ import { type DeveloperRank } from '@/types/TalentRank'
 export const useUserStore = defineStore('userStore', () => {
   const state = reactive({
     user: '', // 用户信息对象（按username搜索）
-    // userList: [] as string[] // 用户列表
   })
-//   const user = reactive<UserObject>({})
 
   // 获取单个用户信息
   const getUserInfo = () => {

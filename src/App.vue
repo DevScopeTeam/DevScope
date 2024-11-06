@@ -35,8 +35,8 @@ const goback = () => {
     <div class="status_bar" v-show="isHome">
       <img class="back" :src="back" alt="" @click="goback()"/>
       <TitleLogo class="title" :color="'#000000'" :fontSize="24" :fontFamily="'YeZiGongChangShanHaiMingChao-2'" :letterSpacing="2"/>
-      <SearchBar class="search_bar" :inputWidth="200" :inputWidthUnit="'px'" :inputHeight="30" :inputHeightUnit="'px'" 
-        :image="1" :iconWidth="25" :iconHeight="25"/>
+      <!-- <SearchBar class="search_bar" :inputWidth="200" :inputWidthUnit="'px'" :inputHeight="30" :inputHeightUnit="'px'" 
+        :image="1" :iconWidth="25" :iconHeight="25"/> -->
     </div>
 
     <!--路由-->

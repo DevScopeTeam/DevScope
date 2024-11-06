@@ -5,13 +5,16 @@ import Switch from '@/components/Switch.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import { onBeforeMount, reactive } from 'vue'
 import { type DeveloperRank } from '@/types/TalentRank'
+import { ElNotification } from 'element-plus'
 import { useUserStore } from '@/stores/userStore'
+import { useFieldStore } from '@/stores/fieldStore'
 import { api } from '@/api'
 import { handleNetworkError } from '@/utils/request/RequestTools'
 
 /* 实现父子组件通信(搜索模式切换) */
 const searchStore = useSearchStore() // 使用pinia的数据
 const userStore = useUserStore()
+const fieldStore = useFieldStore()
 
 const changeSearchMode = async () => {
   await searchStore.changeSearchMode()
@@ -27,10 +30,17 @@ onBeforeMount(async () => {
   if (!data || !data?.list) return
   talentRankList = data.list
 
-  // 更新 talentRankList
+  // 更新talentRankList
   userStore.setTalentRankList(talentRankList);
+  const [err2, data2] = await api.listTag()
+  if (err2) handleNetworkError(err2)
+  if (!data2 || !data2?.list) return
+  let tagList = data2.list
+  
+  // 领域列表存入store
+  fieldStore.setFieldList(tagList)
+  console.log('field list', fieldStore.getFieldList())
 })
-
 </script>
 
 <template>
@@ -43,8 +53,14 @@ onBeforeMount(async () => {
     <div class="search_box">
       <!-- 切换搜索模式 -->
       <Switch class="switch" @click="changeSearchMode"/>
-      <!-- 搜索区域 -->
-      <SearchBar class="search_bar" :inputWidth="85" :inputWidthUnit="'%'" :inputHeight="60" :inputHeightUnit="'px'"
+      
+      <!-- 领域搜索区域 -->
+      <SearchBar v-if="searchStore.getSearchMode()" class="search_bar" 
+        :inputWidth="45" :inputWidthUnit="'%'" :inputHeight="60" :inputHeightUnit="'px'" 
+        :image="0" :iconWidth="40" :iconHeight="40"/>
+      <!-- 普通搜索区域 -->
+      <SearchBar v-else class="search_bar" 
+        :inputWidth="85" :inputWidthUnit="'%'" :inputHeight="60" :inputHeightUnit="'px'" 
         :image="0" :iconWidth="40" :iconHeight="40"/>
     </div>
   </div>
