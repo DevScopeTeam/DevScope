@@ -19,11 +19,11 @@ import { type DeveloperRank } from '@/types/TalentRank'
 import { api } from '@/api/index'
 import { handleNetworkError } from '@/utils/request/RequestTools'
 import type { UserInfo } from '@/types/info'
-import { ElSkeleton, ElSkeletonItem } from 'element-plus'
+// import { ElSkeleton, ElSkeletonItem } from 'element-plus'
 
 /* 使用pinia的数据，实现父子组件通信 */
 const userStore = useUserStore()
-// const searchStore = useSearchStore()
+const searchStore = useSearchStore()
 
 const state = reactive({
   top3List: [] as string[], // 存放top3的排名图标
@@ -114,7 +114,7 @@ onBeforeMount(async () => {
     const user = allocateMember(JSON.parse(userStore.getUserInfo()))
     refreshUserInfo(user.login)
   }
-  
+
   // 构造top3
   state.top3List.push(top1, top2, top3)
 })
@@ -140,7 +140,7 @@ watch(
       <div class="list_title">
         TalentRank
       </div>
-      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()" 
+      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()"
         :key="index" :label="item" :value="item" @click="selectUser(item)">
         <!--排名图标（top 3）-->
         <img class="image" v-if="index < 3" :src="state.top3List[index]" alt=""/>
@@ -352,7 +352,7 @@ watch(
 
         padding: 5px;
         margin-top: 10px;
-        
+
         color: rgb(59, 59, 79);
         font-family: TsangerYuYangT_W05_W05;
       }
