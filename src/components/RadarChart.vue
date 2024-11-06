@@ -1,88 +1,69 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import { reactive, defineProps, watch, ref, nextTick, onBeforeMount, onMounted } from 'vue'
+import { reactive, defineProps, ref, nextTick, onBeforeMount } from 'vue'
 import * as echarts from 'echarts'
-import { type TalentRank } from '@/types/TalentRank'
-import axios from 'axios'
-import { useSearchStore } from '@/stores/searchStore'
+import { type DeveloperRank } from '@/types/TalentRank'
 import { useUserStore } from '@/stores/userStore'
-import { ElNotification } from 'element-plus'
+import { api } from '@/api'
+import { handleNetworkError } from '@/utils/request/RequestTools'
 
 interface Props {
   data: string
 }
 const props = defineProps<Props>()
 
-const searchStore = useSearchStore()
+// const searchStore = useSearchStore()
 const userStore = useUserStore()
 
 // define object class
 class TalentRankClass {
   id = 0
   login = ''
+  username = ''
   nation = ''
   project = 0
   code = 0
   influence = 0
   overall = 0
 }
-let talentRank = reactive<TalentRank>(new TalentRankClass())
+let talentRank = reactive<DeveloperRank>(new TalentRankClass())
 
-watch(
-  () => props.data,
-  (newVal, oldVal) => {
-  }
-)
+// watch(
+//   () => props.data,
+//   (newVal, oldVal) => {
+//   }
+// )
 
 const state = reactive({
   chartData: [] as any[],
-  isLoading: true, 
+  isLoading: true,
   reRendering: true
 })
 
 // 定义ref
 const chart = ref(null)
 
-onBeforeMount(() => {
-  nextTick(()=>{
+onBeforeMount(async () => {
+  nextTick(async () => {
     // 获取TalentRank数据
-    axios.get('https://api.devscope.search.ren/rank/score?username=' + props.data) // 当前的用户的username
-      .then(res => {
-        // console.log('rank res.data', res.data.score)
-        if (res.data.code !== 200) {
-          ElNotification({
-            title: 'Attention',
-            message: 'There is no such user!',
-            type: 'warning',
-            position: 'top-right',
-            offset: 60
-          })
-        } else {
-          // 构造TalentRank数据
-          talentRank.login = props.data
-          talentRank.project = res.data.score.project.toFixed(2)
-          talentRank.code = res.data.score.code.toFixed(2)
-          talentRank.influence = res.data.score.influence.toFixed(2)
-          talentRank.overall = res.data.score.overall.toFixed(2)
+    const [err, data] = await api.getScore(props.data)
+    if (err) handleNetworkError(err)
+    if (!data || !data?.score) return
+    talentRank = data.score
+    //保留小数点后两位
+    talentRank.project = Number(talentRank.project.toFixed(2))
+    talentRank.code = Number(talentRank.code.toFixed(2))
+    talentRank.influence = Number(talentRank.influence.toFixed(2))
+    talentRank.overall = Number(talentRank.overall.toFixed(2))
 
-          // 往userStore.ts更新获取的talentRank信息
-          userStore.setTalentRank(talentRank)
+    // 往userStore.ts更新获取的talentRank信息
+    userStore.setTalentRank(data.score)
 
-          setTimeout(()=>{
-            SetChart()
-          }, 50)
-        }
-      })
-      .catch(err => {
-        console.log('err', err)
-      })
+    setTimeout(() => {
+      SetChart()
+    }, 100)
   })
 })
-
-// onMounted(() => {
-//   setTimeout(() => {
-//     SetChart()
-//   }, 50)
-// })
 
 const SetChart = () => {
   nextTick(() => {
@@ -91,9 +72,9 @@ const SetChart = () => {
     const myChart = echarts.init(document.getElementById('chart')) // 声明组件
 
     // construct data
-    let arr = [talentRank.project, talentRank.code, talentRank.influence] // sample value: [82, 33, 36]
+    const arr = [talentRank.project, talentRank.code, talentRank.influence]
     state.chartData.push(arr)
-    
+
     // const myOption = {
     const myOption = {
       backgroundColor: '#0A1222',
@@ -108,10 +89,10 @@ const SetChart = () => {
           fontFamily: 'YeZiGongChangShanHaiMingChao-2'
         }
       },
-      
+
       legend: {
         // data: [props.data.login],
-        data: [talentRank.login],
+        data: [talentRank.username],
         bottom: 10,
         itemGap: 10,
         textStyle: {
@@ -127,10 +108,10 @@ const SetChart = () => {
         //   console.log('params',params)
         //   return (
         //     '<div style="text-align: left; font-size: 14px;">' +
-        //     '<div style="display: flex; flex-direction: row;">' + 
-        //     'project: ' + '<span style="color: #000;font-weight:500;">' + params.data[0] + '</span>' + 
+        //     '<div style="display: flex; flex-direction: row;">' +
+        //     'project: ' + '<span style="color: #000;font-weight:500;">' + params.data[0] + '</span>' +
         //     // '<br/>' +
-        //     '</div>' + 
+        //     '</div>' +
         //     'code: ' + params.data[1] +
         //     '<br/>' +
         //     'influence: ' + params.data[2] +
@@ -193,7 +174,7 @@ const SetChart = () => {
       series: [
         {
           // name: props.data.login, // user name
-          name: talentRank.login, // user name
+          name: talentRank.username, // user name
           type: 'radar',
           lineStyle: {
             width: 1,
@@ -222,7 +203,7 @@ const SetChart = () => {
     <!-- skeleton -->
     <el-skeleton v-show="state.isLoading" class="skeleton_box" animated>
       <template #template>
-        <el-skeleton-item variant="image" class="image"/>
+        <el-skeleton-item variant="image" class="image" />
       </template>
     </el-skeleton>
 
@@ -231,26 +212,26 @@ const SetChart = () => {
 </template>
 
 <style scoped>
-.outer_box{
+.outer_box {
   width: 100%;
   height: 100%;
-  
+
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
-  .skeleton_box{
+  .skeleton_box {
     width: 500px;
     height: 270px;
 
-    .image{
-      width: 100%; 
+    .image {
+      width: 100%;
       height: 100%;
     }
   }
 
-  .echart_box{
+  .echart_box {
     width: 500px;
     height: 270px;
   }

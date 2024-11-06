@@ -12,13 +12,14 @@ interface TalentRank {
 }
 
 interface DeveloperRank {
-  Username: string;
-  ProjectImportance: number;
-  CodeContribution: number;
-  CommunityInfluence: number;
-  Overall: number;
-  Nation?: string;
-  UpdatedAt?: string;
+  id: number;
+  username: string;
+  project: number;
+  code: number;
+  influence: number;
+  overall: number;
+  nation?: string;
+  updatedAt?: string;
 }
 
 interface DeveloperRankListResp {

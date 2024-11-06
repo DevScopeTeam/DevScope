@@ -24,4 +24,4 @@ function getScore(username: string): Promise<[any, DeveloperScoreResp | undefine
   return Get(Api.Score, { username });
 }
 
-export { listRank, getScore };
+export const rankApis = { listRank, getScore };
