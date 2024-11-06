@@ -158,8 +158,11 @@ const SetChart = () => {
         type: 'category',
         data: userName,
         axisLabel: {
-          interval: 0,
-          rotate: 25
+          interval: 'auto',
+          rotate: 20
+        },
+        axisTick: {
+          interval: 'auto'
         }
       },
 
