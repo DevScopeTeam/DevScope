@@ -2,38 +2,9 @@
 <script setup lang="ts">
 import { reactive, ref, nextTick, onBeforeMount, onMounted } from 'vue'
 import * as echarts from 'echarts'
-import { type DeveloperRank } from '@/types/TalentRank'
-// import { useSearchStore } from '@/stores/searchStore'
 import { useUserStore } from '@/stores/userStore'
 
-// interface Props {
-  // data: TalentRank
-  // data: string
-// }
-// const props = defineProps<Props>()
-// const searchStore = useSearchStore()
 const userStore = useUserStore()
-
-// define object class
-class TalentRankClass {
-  id = 0
-  login = ''
-  username = ''
-  nation = ''
-  project = 0
-  code = 0
-  influence = 0
-  overall = 0
-}
-let talentRank = reactive<DeveloperRank>(new TalentRankClass())
-let talentRankList = reactive<DeveloperRank[]>([])
-
-// watch(
-//   () => props.data,
-//   (newVal, oldVal) => {
-//       SetChart()
-//   }
-// )
 
 const state = reactive({
   chartData: [] as any[],
@@ -96,7 +67,6 @@ const SetChart = () => {
         ])
       },
       data: [],
-      // barWidth: '30%',
     }
     seriesData.push(lineObj)
 

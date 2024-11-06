@@ -2,38 +2,9 @@
 <script setup lang="ts">
 import { reactive, ref, nextTick, onBeforeMount, onMounted } from 'vue'
 import * as echarts from 'echarts'
-import { type DeveloperRank } from '@/types/TalentRank'
-// import { useSearchStore } from '@/stores/searchStore'
 import { useUserStore } from '@/stores/userStore'
 
-// interface Props {
-  // data: TalentRank
-  // data: string
-// }
-// const props = defineProps<Props>()
-// const searchStore = useSearchStore()
 const userStore = useUserStore()
-
-// define object class
-class TalentRankClass {
-  id = 0
-  login = ''
-  username = ''
-  nation = ''
-  project = 0
-  code = 0
-  influence = 0
-  overall = 0
-}
-let talentRank = reactive<DeveloperRank>(new TalentRankClass())
-let talentRankList = reactive<DeveloperRank[]>([])
-
-// watch(
-//   () => props.data,
-//   (newVal, oldVal) => {
-//       SetChart()
-//   }
-// )
 
 const state = reactive({
   chartData: [] as any[],
@@ -69,28 +40,32 @@ const SetChart = () => {
 
     // 2.construct series data
     const seriesData = [] as any[]
-    for (let i = 0; i < 10; i++) {
-      const obj = {
-        name: (userStore.getTalentRankList())[i].username,
-        type: 'bar',
-        stack: 'As', // stack
-        emphasis: { // the highlight style when the mouse hovers over the column
-          focus: 'series'
-        },
-        label: {
-          show: true,
-          fontSize: 10
-        },
-        data: []
+    for (let i = 0; i < (userStore.getTalentRankList()).length; i++) {
+      // 最多显示10个用户的数据
+      if (i === 10) {
+        break;
+      } else {
+        const obj = {
+          name: (userStore.getTalentRankList())[i].username,
+          type: 'bar',
+          stack: 'As', // stack
+          emphasis: { // the highlight style when the mouse hovers over the column
+            focus: 'series'
+          },
+          label: {
+            show: true,
+            fontSize: 10
+          },
+          data: []
+        }
+        seriesData.push(obj)
       }
-      seriesData.push(obj)
     }
 
     // 3.stack datas
     userStore.getTalentRankList().forEach((v1) => {
       seriesData.forEach((v2) => {
         if (v2.name === v1.username) {
-          // 保留2位小数
           v2.data[0] = Number(v1.project.toFixed(2))
           v2.data[1] = Number(v1.code.toFixed(2))
           v2.data[2] = Number(v1.influence.toFixed(2))

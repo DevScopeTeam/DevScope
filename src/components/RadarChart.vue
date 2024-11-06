@@ -12,7 +12,6 @@ interface Props {
 }
 const props = defineProps<Props>()
 
-// const searchStore = useSearchStore()
 const userStore = useUserStore()
 
 // define object class
@@ -27,12 +26,6 @@ class TalentRankClass {
   overall = 0
 }
 let talentRank = reactive<DeveloperRank>(new TalentRankClass())
-
-// watch(
-//   () => props.data,
-//   (newVal, oldVal) => {
-//   }
-// )
 
 const state = reactive({
   chartData: [] as any[],
@@ -50,18 +43,19 @@ onBeforeMount(async () => {
     if (err) handleNetworkError(err)
     if (!data || !data?.score) return
     talentRank = data.score
+
     //保留小数点后两位
     talentRank.project = Number(talentRank.project.toFixed(2))
     talentRank.code = Number(talentRank.code.toFixed(2))
     talentRank.influence = Number(talentRank.influence.toFixed(2))
     talentRank.overall = Number(talentRank.overall.toFixed(2))
-
+    
     // 往userStore.ts更新获取的talentRank信息
-    userStore.setTalentRank(data.score)
+    userStore.setTalentRank(talentRank)
 
-    setTimeout(() => {
+    setTimeout(()=>{
       SetChart()
-    }, 100)
+    }, 50)
   })
 })
 
@@ -72,7 +66,7 @@ const SetChart = () => {
     const myChart = echarts.init(document.getElementById('chart')) // 声明组件
 
     // construct data
-    const arr = [talentRank.project, talentRank.code, talentRank.influence]
+    const arr = [talentRank.project, talentRank.code, talentRank.influence] // sample value: [82, 33, 36]
     state.chartData.push(arr)
 
     // const myOption = {
@@ -104,20 +98,6 @@ const SetChart = () => {
 
       tooltip: {
         trigger: 'item',
-        // formatter: function (params: any) { // params是包含当前数据信息的对象
-        //   console.log('params',params)
-        //   return (
-        //     '<div style="text-align: left; font-size: 14px;">' +
-        //     '<div style="display: flex; flex-direction: row;">' +
-        //     'project: ' + '<span style="color: #000;font-weight:500;">' + params.data[0] + '</span>' +
-        //     // '<br/>' +
-        //     '</div>' +
-        //     'code: ' + params.data[1] +
-        //     '<br/>' +
-        //     'influence: ' + params.data[2] +
-        //     '</div>'
-        //   )
-        // },
         axisPointer: {
           type: "none"
         },
@@ -173,7 +153,6 @@ const SetChart = () => {
 
       series: [
         {
-          // name: props.data.login, // user name
           name: talentRank.username, // user name
           type: 'radar',
           lineStyle: {

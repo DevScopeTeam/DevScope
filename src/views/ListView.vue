@@ -1,8 +1,7 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
 import { onBeforeMount, reactive, watch, nextTick } from 'vue'
-// import { useRoute } from 'vue-router'
-// import { useSearchStore } from '@/stores/searchStore'
+import { useSearchStore } from '@/stores/searchStore'
 import { useUserStore } from '@/stores/userStore'
 import position from '@/assets/image/position.png'
 import company from '@/assets/image/company.png'
@@ -20,8 +19,7 @@ import { type DeveloperRank } from '@/types/TalentRank'
 import { api } from '@/api/index'
 import { handleNetworkError } from '@/utils/request/RequestTools'
 import type { UserInfo } from '@/types/info'
-
-// const route = useRoute() // 使用路由
+import { ElSkeleton, ElSkeletonItem } from 'element-plus'
 
 /* 使用pinia的数据，实现父子组件通信 */
 const userStore = useUserStore()
@@ -35,7 +33,7 @@ const state = reactive({
 
 // define object class
 class userInfoClass {
-  id = 0
+	id = 0
   nodeid = ""
   avatar_url = ''
   name = ''
@@ -50,7 +48,6 @@ class userInfoClass {
 }
 // define userinfo object
 let curUser = reactive<UserInfo>(new userInfoClass())
-// let userList = reactive<UserItem[]>([])
 
 // allocate member of UserItem
 const allocateMember = (input: UserItem) => {
@@ -77,12 +74,18 @@ async function refreshUserInfo(username: string) {
   console.log('info', api_user);
 
   const [err2, nation_data] = await api.getNation(username)
-  if (err) handleNetworkError(err2)
-  if (!nation_data || !nation_data?.nation) return
-  api_user.location = nation_data.nation
+  if (err2) handleNetworkError(err2)
   if (api_user.location == "" || api_user.location == "Unknown") {
     api_user.location = "N/A"
   }
+
+  // 将空的内容设置为N/A
+  if (api_user.name == "") api_user.name = "N/A"
+  if (api_user.company == "") api_user.company = "N/A"
+  if (api_user.url == "") api_user.company = "N/A"
+  if (api_user.blog == "") api_user.blog = "N/A"
+  if (api_user.email == "") api_user.email = "N/A"
+  if (api_user.bio == "") api_user.bio = "N/A"
 
   // 往userStore.ts更新获取的user信息
   userStore.setUserInfo(JSON.stringify(api_user))
@@ -97,7 +100,6 @@ async function refreshUserInfo(username: string) {
   return [err2, api_user]
 }
 
-// const selectUser = (user: UserItem) => {
 const selectUser = async (user: DeveloperRank) => {
   console.log('user', user)
 
@@ -105,9 +107,14 @@ const selectUser = async (user: DeveloperRank) => {
 }
 
 onBeforeMount(async () => {
-  const user = allocateMember(JSON.parse(userStore.getUserInfo()))
-  refreshUserInfo(user.login)
-
+  if (searchStore.getSearchMode()) { // 领域模式
+    // 根据领域的talentRankList的第一个元素的username，搜索该用户的基本信息
+    selectUser((userStore.getTalentRankList())[0])
+  } else { // 普通模式
+    const user = allocateMember(JSON.parse(userStore.getUserInfo()))
+    refreshUserInfo(user.login)
+  }
+  
   // 构造top3
   state.top3List.push(top1, top2, top3)
 })
@@ -129,15 +136,14 @@ watch(
 <template>
   <div class="outer_box">
     <!-- 列表 -->
-    <!-- <div class="list_box" v-show="searchStore.getSearchMode()"> -->
     <div class="list_box">
       <div class="list_title">
         TalentRank
       </div>
-      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()" :key="index" :label="item"
-        :value="item" @click="selectUser(item)">
+      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()" 
+        :key="index" :label="item" :value="item" @click="selectUser(item)">
         <!--排名图标（top 3）-->
-        <img class="image" v-if="index < 3" :src="state.top3List[index]" alt="" />
+        <img class="image" v-if="index < 3" :src="state.top3List[index]" alt=""/>
         <!--排名数字（others）-->
         <div class="number" v-else>{{ index + 1 }}</div>
         <div class="username">{{ item.username }}</div>
@@ -162,7 +168,7 @@ watch(
 
           <div class="company_info">
             <div class="group_box">
-              <img class="icon" :src="position" alt="" />
+              <img class="icon" :src="position" alt=""/>
               <el-tooltip :content="curUser.location" placement="bottom" effect="light">
                 <div class="position">{{ curUser.location }}</div>
               </el-tooltip>
@@ -235,7 +241,7 @@ watch(
 
   .list_box {
     width: 20%;
-    height: 725px;
+    height: 95%;
 
     padding: 10px;
     border-radius: 10px;
@@ -303,8 +309,6 @@ watch(
 
       margin-bottom: 3px;
 
-      margin-bottom: 3px;
-
       .number {
         width: 15%;
         height: 100%;
@@ -339,6 +343,18 @@ watch(
 
         padding: 5px;
         margin-right: 5px;
+        text-align: center;
+      }
+
+      .score{
+        width: 15%;
+        height: 100%;
+
+        padding: 5px;
+        margin-top: 10px;
+        
+        color: rgb(59, 59, 79);
+        font-family: TsangerYuYangT_W05_W05;
       }
     }
   }
