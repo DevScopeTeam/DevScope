@@ -1,49 +1,133 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-// import HelloWorld from './components/HelloWorld.vue'
-import TitleLogo from './components/TitleLogo.vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
+import TitleLogo from '@/components/TitleLogo.vue'
+import SearchBar from '@/components/SearchBar.vue'
+import back from '@/assets/image/back.png'
+
+const route = useRoute() // 使用路由
+const router = useRouter() // 使用路由
+
+// 是否显示status bar
+const isHome = computed(() => {
+  let res = null
+  if (route.path === '/home') { // 首页不显示
+    res = false
+  } else { // 其余显示
+    res = true
+  }
+  return res
+})
+
+// return to the home page
+const goback = () => {
+  router.push({
+    path: '/'
+  })
+}
+
 </script>
 
 <template>
-  <div class="outer_box">
-    <TitleLogo class="title"/>
-  </div>
-  
+  <div>
+    <!--顶部状态栏-->
+    <div class="status_bar" v-show="isHome">
+      <img class="back" :src="back" alt="" @click="goback()"/>
+      <TitleLogo class="title" :color="'#000000'" :fontSize="24" :fontFamily="'YeZiGongChangShanHaiMingChao-2'" :letterSpacing="2"/>
+      <SearchBar class="search_bar" :inputWidth="200" :inputWidthUnit="'px'" :inputHeight="30" :inputHeightUnit="'px'" 
+        :image="1" :iconWidth="25" :iconHeight="25"/>
+    </div>
 
-  <!-- <RouterView /> -->
+    <!--路由-->
+    <div :class="isHome ? 'router_view' : 'router_view_home'">
+      <RouterView></RouterView>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
-.outer_box{
+.status_bar{
+  width: 100%;
+  height: 54px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 99999; // 置于最顶层
+
+  background: #ffffff;
+
+  .back{
+    width: 30px;
+    height: 30px;
+
+    position: fixed;
+    left: 50px;
+    cursor: pointer;
+  }
+
+  .title{
+    width: 100px;
+    height: 100%;
+  }
+
+  .search_bar{
+    width: 200px;
+    height: 30px;
+
+    position: fixed;
+    right: 50px;
+  }
+}
+
+.router_view{
+  width: 100%;
+  height: calc(100% - 54px);
+
+  // page bg
+  background-image: url('@/assets/image/bg.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+
+  position: absolute;
+  top: 54px;
+  left: 0;
+  right: 0;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.router_view_home{
   width: 100%;
   height: 100%;
 
-  // 子元素垂直水平居中
-  position: relative;
+  // page bg
+  background-image: url('@/assets/image/bg.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+
+  position: absolute;
+  top: 0px;
+  left: 0;
+  right: 0;
 
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-
-  .title{
-    width: 100%;
-    height: 100%;
-
-    // 居中
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-
-    font-family: TsangerYuYangT_W05_W05;
-    font-size: 60px;
-    color: rgb(85, 158, 237);
-    font-style: italic;
-    letter-spacing: 3px;
-  }
 }
+
+
 
 
 // header {
