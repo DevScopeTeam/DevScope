@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
 import { onBeforeMount, reactive, watch, nextTick } from 'vue'
 import { useSearchStore } from '@/stores/searchStore'
@@ -22,7 +23,7 @@ import { ElSkeleton, ElSkeletonItem } from 'element-plus'
 
 /* 使用pinia的数据，实现父子组件通信 */
 const userStore = useUserStore()
-const searchStore = useSearchStore()
+// const searchStore = useSearchStore()
 
 const state = reactive({
   top3List: [] as string[], // 存放top3的排名图标
@@ -50,7 +51,7 @@ let curUser = reactive<UserInfo>(new userInfoClass())
 
 // allocate member of UserItem
 const allocateMember = (input: UserItem) => {
-  let user = reactive<UserItem>(new userInfoClass())
+  const user = reactive<UserItem>(new userInfoClass())
   user.id = input.id
   user.avatar_url = input.avatar_url
   user.bio = input.bio
@@ -157,7 +158,7 @@ watch(
         <div class="info_box" v-if="state.reRendering">
           <div class="base_info">
             <div class="amatar_box">
-              <img class="avatar" :src="curUser.avatar_url" alt=""/>
+              <img class="avatar" :src="curUser.avatar_url" alt="" />
             </div>
             <div class="name_box">
               <div class="name">{{ curUser.name }}</div>
@@ -176,7 +177,7 @@ watch(
               </el-tooltip> -->
             </div>
             <div class="group_box">
-              <img class="icon" :src="company" alt=""/>
+              <img class="icon" :src="company" alt="" />
               <el-tooltip :content="curUser.company" placement="bottom" effect="light">
                 <div class="company">{{ curUser.company }}</div>
               </el-tooltip>
@@ -185,13 +186,13 @@ watch(
 
           <div class="link_info">
             <div class="group_box">
-              <img class="icon" :src="url" alt=""/>
+              <img class="icon" :src="url" alt="" />
               <el-tooltip :content="curUser.url" placement="bottom" effect="light">
                 <div class="url">{{ curUser.url }}</div>
               </el-tooltip>
             </div>
             <div class="group_box">
-              <img class="icon" :src="blog" alt=""/>
+              <img class="icon" :src="blog" alt="" />
               <el-tooltip :content="curUser.blog" placement="bottom" effect="light">
                 <div class="blog">{{ curUser.blog }}</div>
               </el-tooltip>
@@ -200,7 +201,7 @@ watch(
 
           <div class="email_info">
             <div class="group_box">
-              <img class="icon" :src="email" alt=""/>
+              <img class="icon" :src="email" alt="" />
               <el-tooltip :content="curUser.email" placement="bottom" effect="light">
                 <div class="email">{{ curUser.email }}</div>
               </el-tooltip>
@@ -216,7 +217,7 @@ watch(
         <div class="rank_box">
           <div class="base_box">
             <div class="rank_title">Talent Rank</div>
-            <RadarChart class="radar_chart" :data="curUser.login" v-if="state.reRendering"/>
+            <RadarChart class="radar_chart" :data="curUser.login" v-if="state.reRendering" />
             <BarChart class="bar_chart" />
             <LineChart class="line_chart" />
           </div>
@@ -227,7 +228,7 @@ watch(
 </template>
 
 <style lang="scss" scoped>
-.outer_box{
+.outer_box {
   width: 100%;
   height: 100%;
 
@@ -238,7 +239,7 @@ watch(
   justify-content: center;
   align-items: flex-start;
 
-  .list_box{
+  .list_box {
     width: 20%;
     height: 95%;
 
@@ -252,18 +253,19 @@ watch(
     align-items: center;
 
     margin-right: 10px;
-    
+
     // overflow scrolling
     overflow-x: hidden;
     overflow-y: scroll;
+
     &::-webkit-scrollbar {
       width: 0; // hidden scrollbar
     }
 
-    .list_title{
+    .list_title {
       width: 100%;
       height: 50px;
-      
+
       background-color: #000000;
       border-radius: 6px 6px 0 0;
       box-shadow: 1px 2px #dcdcdc;
@@ -307,7 +309,7 @@ watch(
 
       margin-bottom: 3px;
 
-      .number{
+      .number {
         width: 15%;
         height: 100%;
 
@@ -335,7 +337,7 @@ watch(
         font-weight: 300;
       }
 
-      .image{
+      .image {
         width: 15%;
         height: 100%;
 
@@ -357,7 +359,7 @@ watch(
     }
   }
 
-  .body_box{
+  .body_box {
     width: 60%;
     height: 95%;
 
@@ -374,11 +376,12 @@ watch(
     // overflow scrolling
     overflow-x: hidden;
     overflow-y: scroll;
+
     &::-webkit-scrollbar {
       width: 0; // hidden scrollbar
     }
 
-    .info_box{
+    .info_box {
       width: 100%;
       height: auto;
 
@@ -386,8 +389,8 @@ watch(
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      
-      .base_info{
+
+      .base_info {
         width: 100%;
         height: auto;
 
@@ -398,7 +401,7 @@ watch(
 
         padding: 10px;
 
-        .amatar_box{
+        .amatar_box {
           width: 30%;
           height: 100%;
 
@@ -406,8 +409,8 @@ watch(
           flex-direction: row;
           justify-content: center;
           align-items: center;
-          
-          .avatar{
+
+          .avatar {
             width: 80%;
             height: 80%;
 
@@ -416,7 +419,7 @@ watch(
           }
         }
 
-        .name_box{
+        .name_box {
           width: 70%;
           height: 100%;
 
@@ -424,7 +427,7 @@ watch(
           flex-direction: column;
           align-items: flex-start;
 
-          .name{
+          .name {
             width: 100%;
             height: auto;
 
@@ -440,7 +443,7 @@ watch(
             white-space: nowrap;
           }
 
-          .login{
+          .login {
             width: 100%;
             height: auto;
 
@@ -459,26 +462,30 @@ watch(
       }
 
       // 居中与非居中的划分
-      .company_info, .link_info{
+      .company_info,
+      .link_info {
         display: flex;
         flex-direction: row;
         justify-content: center;
         align-items: flex-start;
       }
-      .email_info{
+
+      .email_info {
         display: flex;
         flex-direction: row;
         align-items: flex-start;
         // margin-left: 4%;
       }
 
-      .company_info, .link_info, .email_info{
+      .company_info,
+      .link_info,
+      .email_info {
         width: 100%;
         height: 100%;
 
         padding: 10px;
 
-        .group_box{
+        .group_box {
           // width: 48%;
           width: 415px;
           height: 100%;
@@ -487,14 +494,14 @@ watch(
           flex-direction: row;
           justify-content: flex-start;
           align-items: center;
-          
+
           box-shadow: 2px 2px 6px #dcdcdc;
           border-radius: 10px;
           margin: 5px;
           padding: 5px;
           background-color: rgb(255, 255, 255);
 
-          .icon{
+          .icon {
             width: 20px;
             height: 20px;
 
@@ -502,23 +509,28 @@ watch(
           }
 
           // 以下为各个文字组件的样式
-          .position, .location, .company, .url, .blog, .email{
+          .position,
+          .location,
+          .company,
+          .url,
+          .blog,
+          .email {
             font-family: DingTalk_JinBuTi_Regular;
-            
+
             // 溢出隐藏
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
           }
 
-          .position{
+          .position {
             width: 30%;
             height: 100%;
 
             text-align: left;
           }
 
-          .location{
+          .location {
             width: 50%;
             height: 100%;
 
@@ -526,7 +538,10 @@ watch(
             text-align: left;
           }
 
-          .company, .url, .blog, .email{
+          .company,
+          .url,
+          .blog,
+          .email {
             width: 90%;
             height: 100%;
 
@@ -535,7 +550,7 @@ watch(
         }
       }
 
-      .bio_info{
+      .bio_info {
         width: 95%;
         height: 100%;
 
@@ -549,23 +564,23 @@ watch(
         box-shadow: 2px 2px 6px #dcdcdc;
         border-radius: 5px;
 
-        .bio{
+        .bio {
           width: 100%;
           height: 100%;
-          
+
           text-align: left;
           font-family: DingTalk_JinBuTi_Regular;
         }
       }
 
       // 单独的额外样式
-      .company_info{
+      .company_info {
         margin-top: 30px;
       }
 
     }
 
-    .rank_box{
+    .rank_box {
       width: 100%;
       height: auto;
 
@@ -576,7 +591,7 @@ watch(
 
       margin-top: 180px;
 
-      .base_box{
+      .base_box {
         width: 95%;
         height: 100%;
 
@@ -584,11 +599,11 @@ watch(
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        
+
         box-shadow: 2px 2px 6px #dcdcdc;
         border-radius: 10px;
 
-        .rank_title{
+        .rank_title {
           width: 100%;
           height: 10%;
 
@@ -601,7 +616,7 @@ watch(
           padding-top: 10px;
         }
 
-        .radar_chart{
+        .radar_chart {
           width: 100%;
           height: 30%;
 
@@ -613,7 +628,7 @@ watch(
           align-items: center;
         }
 
-        .bar_chart{
+        .bar_chart {
           width: 100%;
           height: 30%;
 
@@ -625,7 +640,7 @@ watch(
           align-items: center;
         }
 
-        .line_chart{
+        .line_chart {
           width: 100%;
           height: 30%;
 

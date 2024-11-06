@@ -32,7 +32,6 @@ onBeforeMount(async () => {
 
   // 更新talentRankList
   userStore.setTalentRankList(talentRankList);
-
   const [err2, data2] = await api.listTag()
   if (err2) handleNetworkError(err2)
   if (!data2 || !data2?.list) return
@@ -47,7 +46,7 @@ onBeforeMount(async () => {
 <template>
   <div class="outer_box">
     <!-- title -->
-    <TitleLogo class="title" :color="'rgb(247, 250, 252)'" :fontSize="60" :fontFamily="'TsangerYuYangT_W05_W05'" 
+    <TitleLogo class="title" :color="'rgb(247, 250, 252)'" :fontSize="60" :fontFamily="'TsangerYuYangT_W05_W05'"
       :fontStyle="'italic'" :letterSpacing="3"/>
 
     <!-- 搜索框 -->
@@ -81,7 +80,7 @@ onBeforeMount(async () => {
     width: 60%;
     height: 100px;
   }
-  
+
   .search_box{
     width: 60%;
     height: 70px;

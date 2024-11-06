@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
 import { reactive, defineProps, ref, nextTick, onBeforeMount } from 'vue'
 import * as echarts from 'echarts'
@@ -28,7 +29,7 @@ let talentRank = reactive<DeveloperRank>(new TalentRankClass())
 
 const state = reactive({
   chartData: [] as any[],
-  isLoading: true, 
+  isLoading: true,
   reRendering: true
 })
 
@@ -42,7 +43,7 @@ onBeforeMount(async () => {
     if (err) handleNetworkError(err)
     if (!data || !data?.score) return
     talentRank = data.score
-    
+
     //保留小数点后两位
     talentRank.project = Number(talentRank.project.toFixed(2))
     talentRank.code = Number(talentRank.code.toFixed(2))
@@ -67,7 +68,7 @@ const SetChart = () => {
     // construct data
     const arr = [talentRank.project, talentRank.code, talentRank.influence] // sample value: [82, 33, 36]
     state.chartData.push(arr)
-    
+
     // const myOption = {
     const myOption = {
       backgroundColor: '#0A1222',
@@ -82,7 +83,7 @@ const SetChart = () => {
           fontFamily: 'YeZiGongChangShanHaiMingChao-2'
         }
       },
-      
+
       legend: {
         // data: [props.data.login],
         data: [talentRank.username],
@@ -181,7 +182,7 @@ const SetChart = () => {
     <!-- skeleton -->
     <el-skeleton v-show="state.isLoading" class="skeleton_box" animated>
       <template #template>
-        <el-skeleton-item variant="image" class="image"/>
+        <el-skeleton-item variant="image" class="image" />
       </template>
     </el-skeleton>
 
@@ -190,26 +191,26 @@ const SetChart = () => {
 </template>
 
 <style scoped>
-.outer_box{
+.outer_box {
   width: 100%;
   height: 100%;
-  
+
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
-  .skeleton_box{
+  .skeleton_box {
     width: 500px;
     height: 270px;
 
-    .image{
-      width: 100%; 
+    .image {
+      width: 100%;
       height: 100%;
     }
   }
 
-  .echart_box{
+  .echart_box {
     width: 500px;
     height: 270px;
   }

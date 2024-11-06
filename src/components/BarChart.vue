@@ -153,7 +153,7 @@ const SetChart = () => {
 .outer_box{
   width: 100%;
   height: 100%;
-  
+
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -164,7 +164,7 @@ const SetChart = () => {
     height: 270px;
 
     .image{
-      width: 100%; 
+      width: 100%;
       height: 100%;
     }
   }

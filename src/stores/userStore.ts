@@ -2,7 +2,7 @@ import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { type DeveloperRank } from '@/types/TalentRank'
 
-export const useUserStore = defineStore('userStore', () => {  
+export const useUserStore = defineStore('userStore', () => {
   const state = reactive({
     user: '', // 用户信息对象（按username搜索）
   })
@@ -11,7 +11,7 @@ export const useUserStore = defineStore('userStore', () => {
   const getUserInfo = () => {
     return state.user
   }
-  
+
   // 设置单个用户信息
   const setUserInfo = (user: string) => {
     state.user = user
