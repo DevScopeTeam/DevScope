@@ -273,8 +273,21 @@ watch(
       flex-direction: column;
       justify-content: center;
       align-items: center;
+
+      // // fixed at the top
+      // position: -webkit-sticky;
+      // position: sticky;
+      // top: 0;
+      // z-index: 9999;
     }
 
+    .list_content:nth-child(1){
+      border-radius: 0 0 6px 6px;
+      margin-top: 50px;
+    }
+    .list_content:not(:first-child){
+      border-radius: 6px;
+    }
     .list_content{
       width: 100%;
       height: 45px;
@@ -307,7 +320,7 @@ watch(
       }
 
       .username{
-        width: 65%;
+        width: 55%;
         height: 100%;
 
         display: flex;
