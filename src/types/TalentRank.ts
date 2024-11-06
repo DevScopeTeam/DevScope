@@ -14,9 +14,9 @@ interface TalentRank {
 interface DeveloperRank {
   id: number;
   username: string;
-  projectImportance: number;
-  codeContribution: number;
-  communityInfluence: number;
+  project: number;
+  code: number;
+  influence: number;
   overall: number;
   nation?: string;
   updatedAt?: string;
