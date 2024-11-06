@@ -141,7 +141,7 @@ watch(
         <!--排名数字（others）-->
         <div class="number" v-else>{{ index + 1 }}</div>
         <div class="username">{{ item.username }}</div>
-        <div class="score">{{ item.overall }}</div>
+        <div class="score">{{ item.overall.toFixed(2) }}</div>
       </div>
     </div>
 
