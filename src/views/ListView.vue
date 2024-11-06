@@ -1,8 +1,8 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
 import { onBeforeMount, reactive, watch, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
-import { ElSkeleton, ElSkeletonItem } from 'element-plus'
-import { useSearchStore } from '@/stores/searchStore'
+// import { useRoute } from 'vue-router'
+// import { useSearchStore } from '@/stores/searchStore'
 import { useUserStore } from '@/stores/userStore'
 import position from '@/assets/image/position.png'
 import company from '@/assets/image/company.png'
@@ -16,15 +16,16 @@ import RadarChart from '@/components/RadarChart.vue'
 import BarChart from '@/components/BarChart.vue'
 import LineChart from '@/components/LineChart.vue'
 import { type UserItem } from '@/types/UserItem'
-import { type TalentRank } from '@/types/TalentRank'
-import axios from 'axios'
-import { ElNotification } from 'element-plus'
+import { type DeveloperRank } from '@/types/TalentRank'
+import { api } from '@/api/index'
+import { handleNetworkError } from '@/utils/request/RequestTools'
+import type { UserInfo } from '@/types/info'
 
-const route = useRoute() // 使用路由
+// const route = useRoute() // 使用路由
 
 /* 使用pinia的数据，实现父子组件通信 */
 const userStore = useUserStore()
-const searchStore = useSearchStore()
+// const searchStore = useSearchStore()
 
 const state = reactive({
   top3List: [] as string[], // 存放top3的排名图标
@@ -34,7 +35,8 @@ const state = reactive({
 
 // define object class
 class userInfoClass {
-	id = 0
+  id = 0
+  nodeid = ""
   avatar_url = ''
   name = ''
   login = ''
@@ -47,24 +49,12 @@ class userInfoClass {
   bio = ''
 }
 // define userinfo object
-let curUser = reactive<UserItem>(new userInfoClass())
-let userList = reactive<UserItem[]>(new Array())
-
-// define object class
-class TalentRankClass {
-  id = 0
-  login = ''
-  nation = ''
-  project = 0
-  code = 0
-  influence = 0
-  overall = 0
-}
-let talentRank = reactive<TalentRank>(new TalentRankClass())
+let curUser = reactive<UserInfo>(new userInfoClass())
+// let userList = reactive<UserItem[]>([])
 
 // allocate member of UserItem
 const allocateMember = (input: UserItem) => {
-  let user = reactive<UserItem>(new userInfoClass())
+  const user = reactive<UserItem>(new userInfoClass())
   user.id = input.id
   user.avatar_url = input.avatar_url
   user.bio = input.bio
@@ -79,72 +69,45 @@ const allocateMember = (input: UserItem) => {
   return user
 }
 
-// const selectUser = (user: UserItem) => {
-const selectUser = (user: TalentRank) => {
-  // 根据选择的用户的login，去调用api获取新的用户的信息，然后设置为curUser
-  axios.get('https://api.devscope.search.ren/github/user/info?username=' + user.login)
-    .then(res => {
-    // console.log('user res.data', res.data)
-    if (res.data.code !== 200) {
-      ElNotification({
-        title: 'Attention',
-        message: 'There is no such user!',
-        type: 'warning',
-        position: 'top-right',
-        offset: 60
-      })
-    } else {
-      let api_user = res.data.user
-      // 空数据填充N/A
-      for (let item in api_user) {
-        if (api_user[item] === null || api_user[item] === '' || api_user[item] === undefined) {
-          api_user[item] = 'N/A'
-        }
-      }
+async function refreshUserInfo(username: string) {
+  const [err, data] = await api.getInfo(username)
+  if (err) handleNetworkError(err)
+  if (!data || !data?.user) return
+  const api_user = data.user;
+  console.log('info', api_user);
 
-      // construct field 'Position'
-      axios.get('https://api.devscope.search.ren/github/user/nation?username=' + user.login)
-        .then(res2 => {
-          // console.log('positon res.data', res2.data)
-          if (res2.data.code !== 200) {
-            ElNotification({
-              title: 'Attention',
-              message: 'There is no such user!',
-              type: 'warning',
-              position: 'top-right',
-              offset: 60
-            })
-          } else {
-            // get the nation
-            api_user['position'] = res2.data.nation
+  const [err2, nation_data] = await api.getNation(username)
+  if (err) handleNetworkError(err2)
+  if (!nation_data || !nation_data?.nation) return
+  api_user.location = nation_data.nation
+  if (api_user.location == "" || api_user.location == "Unknown") {
+    api_user.location = "N/A"
+  }
 
-            // 往userStore.ts更新获取的user信息
-            userStore.setUserInfo(JSON.stringify(api_user))
-            let user = allocateMember(api_user)
-            curUser = user
-            console.log('curUser',curUser)
+  // 往userStore.ts更新获取的user信息
+  userStore.setUserInfo(JSON.stringify(api_user))
+  curUser = api_user
+  console.log('curUser', curUser)
 
-            state.reRendering = false
-            nextTick(() => {
-              state.reRendering = true
-            })
-          }
-        })
-        .catch(err => {
-          console.log('err', err)
-        })
-      }
-    })
-    .catch(err => {
-      console.log('err', err)
-    })
+  state.reRendering = false
+  nextTick(() => {
+    state.reRendering = true
+  })
+
+  return [err2, api_user]
 }
 
-onBeforeMount(() => {
-  let tmp = userStore.getUserInfo() // searched user
-  let user = allocateMember(JSON.parse(tmp))
-  curUser = user
-  
+// const selectUser = (user: UserItem) => {
+const selectUser = async (user: DeveloperRank) => {
+  console.log('user', user)
+
+  refreshUserInfo(user.username)
+}
+
+onBeforeMount(async () => {
+  const user = allocateMember(JSON.parse(userStore.getUserInfo()))
+  refreshUserInfo(user.login)
+
   // 构造top3
   state.top3List.push(top1, top2, top3)
 })
@@ -171,12 +134,13 @@ watch(
       <div class="list_title">
         TalentRank
       </div>
-      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()" :key="index" :label="item" :value="item" @click="selectUser(item)">
+      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()" :key="index" :label="item"
+        :value="item" @click="selectUser(item)">
         <!--排名图标（top 3）-->
-        <img class="image" v-if="index<3" :src="state.top3List[index]" alt=""/>
+        <img class="image" v-if="index < 3" :src="state.top3List[index]" alt="" />
         <!--排名数字（others）-->
         <div class="number" v-else>{{ index + 1 }}</div>
-        <div class="username">{{ item.login }}</div>
+        <div class="username">{{ item.username }}</div>
         <div class="score">{{ item.overall }}</div>
       </div>
     </div>
@@ -188,7 +152,7 @@ watch(
         <div class="info_box" v-if="state.reRendering">
           <div class="base_info">
             <div class="amatar_box">
-              <img class="avatar" :src="curUser.avatar_url" alt=""/>
+              <img class="avatar" :src="curUser.avatar_url" alt="" />
             </div>
             <div class="name_box">
               <div class="name">{{ curUser.name }}</div>
@@ -198,16 +162,16 @@ watch(
 
           <div class="company_info">
             <div class="group_box">
-              <img class="icon" :src="position" alt=""/>
-              <el-tooltip :content="curUser.position" placement="bottom" effect="light">
-                <div class="position">{{ curUser.position }}</div>
-              </el-tooltip>
+              <img class="icon" :src="position" alt="" />
               <el-tooltip :content="curUser.location" placement="bottom" effect="light">
-                <div class="location">{{ curUser.location }}</div>
+                <div class="position">{{ curUser.location }}</div>
               </el-tooltip>
+              <!-- <el-tooltip :content="curUser.location" placement="bottom" effect="light">
+                <div class="location">{{ curUser.location }}</div>
+              </el-tooltip> -->
             </div>
             <div class="group_box">
-              <img class="icon" :src="company" alt=""/>
+              <img class="icon" :src="company" alt="" />
               <el-tooltip :content="curUser.company" placement="bottom" effect="light">
                 <div class="company">{{ curUser.company }}</div>
               </el-tooltip>
@@ -216,13 +180,13 @@ watch(
 
           <div class="link_info">
             <div class="group_box">
-              <img class="icon" :src="url" alt=""/>
+              <img class="icon" :src="url" alt="" />
               <el-tooltip :content="curUser.url" placement="bottom" effect="light">
                 <div class="url">{{ curUser.url }}</div>
               </el-tooltip>
             </div>
             <div class="group_box">
-              <img class="icon" :src="blog" alt=""/>
+              <img class="icon" :src="blog" alt="" />
               <el-tooltip :content="curUser.blog" placement="bottom" effect="light">
                 <div class="blog">{{ curUser.blog }}</div>
               </el-tooltip>
@@ -231,7 +195,7 @@ watch(
 
           <div class="email_info">
             <div class="group_box">
-              <img class="icon" :src="email" alt=""/>
+              <img class="icon" :src="email" alt="" />
               <el-tooltip :content="curUser.email" placement="bottom" effect="light">
                 <div class="email">{{ curUser.email }}</div>
               </el-tooltip>
@@ -247,7 +211,7 @@ watch(
         <div class="rank_box">
           <div class="base_box">
             <div class="rank_title">Talent Rank</div>
-            <RadarChart class="radar_chart" :data="curUser.login" v-if="state.reRendering"/>
+            <RadarChart class="radar_chart" :data="curUser.login" v-if="state.reRendering" />
             <BarChart class="bar_chart" />
             <LineChart class="line_chart" />
           </div>
@@ -258,7 +222,7 @@ watch(
 </template>
 
 <style lang="scss" scoped>
-.outer_box{
+.outer_box {
   width: 100%;
   height: 100%;
 
@@ -269,7 +233,7 @@ watch(
   justify-content: center;
   align-items: flex-start;
 
-  .list_box{
+  .list_box {
     width: 20%;
     height: 725px;
 
@@ -283,18 +247,19 @@ watch(
     align-items: center;
 
     margin-right: 10px;
-    
+
     // overflow scrolling
     overflow-x: hidden;
     overflow-y: scroll;
+
     &::-webkit-scrollbar {
       width: 0; // hidden scrollbar
     }
 
-    .list_title{
+    .list_title {
       width: 100%;
       height: 50px;
-      
+
       background-color: #000000;
       border-radius: 6px 6px 0 0;
       box-shadow: 1px 2px #dcdcdc;
@@ -316,14 +281,16 @@ watch(
       // z-index: 9999;
     }
 
-    .list_content:nth-child(1){
+    .list_content:nth-child(1) {
       border-radius: 0 0 6px 6px;
       margin-top: 50px;
     }
-    .list_content:not(:first-child){
+
+    .list_content:not(:first-child) {
       border-radius: 6px;
     }
-    .list_content{
+
+    .list_content {
       width: 100%;
       height: 45px;
 
@@ -338,7 +305,7 @@ watch(
 
       margin-bottom: 3px;
 
-      .number{
+      .number {
         width: 15%;
         height: 100%;
 
@@ -352,7 +319,7 @@ watch(
         color: #000000;
       }
 
-      .username{
+      .username {
         width: 55%;
         height: 100%;
 
@@ -366,7 +333,7 @@ watch(
         font-weight: 300;
       }
 
-      .image{
+      .image {
         width: 15%;
         height: 100%;
 
@@ -375,20 +342,20 @@ watch(
         text-align: center;
       }
 
-      .score{
+      .score {
         width: 15%;
         height: 100%;
 
         padding: 5px;
         margin-top: 10px;
-        
+
         color: rgb(59, 59, 79);
         font-family: TsangerYuYangT_W05_W05;
       }
     }
   }
 
-  .body_box{
+  .body_box {
     width: 60%;
     height: 95%;
 
@@ -405,11 +372,12 @@ watch(
     // overflow scrolling
     overflow-x: hidden;
     overflow-y: scroll;
+
     &::-webkit-scrollbar {
       width: 0; // hidden scrollbar
     }
 
-    .info_box{
+    .info_box {
       width: 100%;
       height: auto;
 
@@ -417,8 +385,8 @@ watch(
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      
-      .base_info{
+
+      .base_info {
         width: 100%;
         height: auto;
 
@@ -429,7 +397,7 @@ watch(
 
         padding: 10px;
 
-        .amatar_box{
+        .amatar_box {
           width: 30%;
           height: 100%;
 
@@ -437,8 +405,8 @@ watch(
           flex-direction: row;
           justify-content: center;
           align-items: center;
-          
-          .avatar{
+
+          .avatar {
             width: 80%;
             height: 80%;
 
@@ -447,7 +415,7 @@ watch(
           }
         }
 
-        .name_box{
+        .name_box {
           width: 70%;
           height: 100%;
 
@@ -455,7 +423,7 @@ watch(
           flex-direction: column;
           align-items: flex-start;
 
-          .name{
+          .name {
             width: 100%;
             height: auto;
 
@@ -471,7 +439,7 @@ watch(
             white-space: nowrap;
           }
 
-          .login{
+          .login {
             width: 100%;
             height: auto;
 
@@ -490,26 +458,30 @@ watch(
       }
 
       // 居中与非居中的划分
-      .company_info, .link_info{
+      .company_info,
+      .link_info {
         display: flex;
         flex-direction: row;
         justify-content: center;
         align-items: flex-start;
       }
-      .email_info{
+
+      .email_info {
         display: flex;
         flex-direction: row;
         align-items: flex-start;
         // margin-left: 4%;
       }
 
-      .company_info, .link_info, .email_info{
+      .company_info,
+      .link_info,
+      .email_info {
         width: 100%;
         height: 100%;
 
         padding: 10px;
 
-        .group_box{
+        .group_box {
           // width: 48%;
           width: 415px;
           height: 100%;
@@ -518,14 +490,14 @@ watch(
           flex-direction: row;
           justify-content: flex-start;
           align-items: center;
-          
+
           box-shadow: 2px 2px 6px #dcdcdc;
           border-radius: 10px;
           margin: 5px;
           padding: 5px;
           background-color: rgb(255, 255, 255);
 
-          .icon{
+          .icon {
             width: 20px;
             height: 20px;
 
@@ -533,23 +505,28 @@ watch(
           }
 
           // 以下为各个文字组件的样式
-          .position, .location, .company, .url, .blog, .email{
+          .position,
+          .location,
+          .company,
+          .url,
+          .blog,
+          .email {
             font-family: DingTalk_JinBuTi_Regular;
-            
+
             // 溢出隐藏
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
           }
 
-          .position{
+          .position {
             width: 30%;
             height: 100%;
 
             text-align: left;
           }
 
-          .location{
+          .location {
             width: 50%;
             height: 100%;
 
@@ -557,7 +534,10 @@ watch(
             text-align: left;
           }
 
-          .company, .url, .blog, .email{
+          .company,
+          .url,
+          .blog,
+          .email {
             width: 90%;
             height: 100%;
 
@@ -566,7 +546,7 @@ watch(
         }
       }
 
-      .bio_info{
+      .bio_info {
         width: 95%;
         height: 100%;
 
@@ -580,23 +560,23 @@ watch(
         box-shadow: 2px 2px 6px #dcdcdc;
         border-radius: 5px;
 
-        .bio{
+        .bio {
           width: 100%;
           height: 100%;
-          
+
           text-align: left;
           font-family: DingTalk_JinBuTi_Regular;
         }
       }
 
       // 单独的额外样式
-      .company_info{
+      .company_info {
         margin-top: 30px;
       }
 
     }
 
-    .rank_box{
+    .rank_box {
       width: 100%;
       height: auto;
 
@@ -607,7 +587,7 @@ watch(
 
       margin-top: 180px;
 
-      .base_box{
+      .base_box {
         width: 95%;
         height: 100%;
 
@@ -615,11 +595,11 @@ watch(
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        
+
         box-shadow: 2px 2px 6px #dcdcdc;
         border-radius: 10px;
 
-        .rank_title{
+        .rank_title {
           width: 100%;
           height: 10%;
 
@@ -632,7 +612,7 @@ watch(
           padding-top: 10px;
         }
 
-        .radar_chart{
+        .radar_chart {
           width: 100%;
           height: 30%;
 
@@ -644,7 +624,7 @@ watch(
           align-items: center;
         }
 
-        .bar_chart{
+        .bar_chart {
           width: 100%;
           height: 30%;
 
@@ -656,7 +636,7 @@ watch(
           align-items: center;
         }
 
-        .line_chart{
+        .line_chart {
           width: 100%;
           height: 30%;
 
