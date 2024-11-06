@@ -1,33 +1,32 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import { reactive, defineProps, watch, ref, nextTick, onBeforeMount, onMounted } from 'vue'
+import { reactive, ref, nextTick, onBeforeMount, onMounted } from 'vue'
 import * as echarts from 'echarts'
-import { type TalentRank } from '@/types/TalentRank'
-import axios from 'axios'
-import { useSearchStore } from '@/stores/searchStore'
+import { type DeveloperRank } from '@/types/TalentRank'
+// import { useSearchStore } from '@/stores/searchStore'
 import { useUserStore } from '@/stores/userStore'
-import { ElNotification } from 'element-plus'
 
-interface Props {
+// interface Props {
   // data: TalentRank
   // data: string
-}
-const props = defineProps<Props>()
-
-const searchStore = useSearchStore()
+// }
+// const props = defineProps<Props>()
+// const searchStore = useSearchStore()
 const userStore = useUserStore()
 
 // define object class
 class TalentRankClass {
   id = 0
   login = ''
+  username = ''
   nation = ''
   project = 0
   code = 0
   influence = 0
   overall = 0
 }
-let talentRank = reactive<TalentRank>(new TalentRankClass())
-let talentRankList = reactive<TalentRank[]>(new Array())
+let talentRank = reactive<DeveloperRank>(new TalentRankClass())
+let talentRankList = reactive<DeveloperRank[]>([])
 
 // watch(
 //   () => props.data,
@@ -100,17 +99,17 @@ const SetChart = () => {
       // barWidth: '30%',
     }
     seriesData.push(lineObj)
-    
+
     // 2.construct usernames
-    let userName = [] as string[]
+    const userName = [] as string[]
     userStore.getTalentRankList().forEach((v) => {
-      userName.push(v.login)
+      userName.push(v.username)
     })
 
     // 3.put data
     userStore.getTalentRankList().forEach((v1) => {
       seriesData.forEach((v2) => {
-        v2.data.push(v1.overall)
+        v2.data.push(Number(v1.overall.toFixed(2)))
       })
     })
     // console.log('seriesData',seriesData)
@@ -201,7 +200,7 @@ const SetChart = () => {
 .outer_box{
   width: 100%;
   height: 100%;
-  
+
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -212,7 +211,7 @@ const SetChart = () => {
     height: 270px;
 
     .image{
-      width: 100%; 
+      width: 100%;
       height: 100%;
     }
   }
