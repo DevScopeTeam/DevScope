@@ -10,11 +10,6 @@ DevScope是一个基于 Vue3.js + TypeScript 的前端框架，用于提供 DevS
 
 
 
-## 配置
-
-config/config.yaml
-
-
 
 # 如何使用
 
