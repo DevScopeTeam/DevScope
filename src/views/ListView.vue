@@ -8,6 +8,7 @@ import company from '@/assets/image/company.png'
 import url from '@/assets/image/url.png'
 import blog from '@/assets/image/blog.png'
 import email from '@/assets/image/email.png'
+import domain from '@/assets/image/domain.png'
 import top1 from '@/assets/image/top1.png'
 import top2 from '@/assets/image/top2.png'
 import top3 from '@/assets/image/top3.png'
@@ -36,6 +37,7 @@ class userInfoClass {
 	id = 0
   nodeid = ""
   avatar_url = ''
+  domain = ''
   name = ''
   login = ''
   position = ''
@@ -89,6 +91,13 @@ async function refreshUserInfo(username: string) {
   if (api_user.blog == "") api_user.blog = "N/A"
   if (api_user.email == "") api_user.email = "N/A"
   if (api_user.bio == "") api_user.bio = "N/A"
+
+  // 获取用户的领域信息
+  const [err3, domain_data] = await api.getUserDomain(username)
+  if (err3) handleNetworkError(err3)
+  if (domain_data?.domains) {
+    api_user.domain = domain_data.domains;
+  }
 
   // 往userStore.ts更新获取的user信息
   userStore.setUserInfo(JSON.stringify(api_user))
@@ -199,6 +208,10 @@ watch(
             <div class="group_box">
               <img class="icon" :src="email" alt="" />
               <div class="email">{{ curUser.email }}</div>
+            </div>
+            <div class="group_box">
+              <img class="icon" :src="domain" alt="" />
+              <div class="domain">{{ curUser.domain }}</div>
             </div>
           </div>
 
@@ -502,7 +515,8 @@ watch(
           .company,
           .url,
           .blog,
-          .email {
+          .email,
+          .domain {
             font-family: DingTalk_JinBuTi_Regular;
 
             // 溢出隐藏
@@ -529,7 +543,8 @@ watch(
           .company,
           .url,
           .blog,
-          .email {
+          .email,
+          .domain {
             width: 90%;
             height: 100%;
 
@@ -577,7 +592,7 @@ watch(
       justify-content: center;
       align-items: center;
 
-      margin-top: 180px;
+      margin-top: 60px;
 
       .base_box {
         width: 95%;
