@@ -22,7 +22,7 @@ type RequestFunction<T extends HTTPMethod> = T extends 'GET'
 export const requests = [
   axios.create({
     baseURL: baseURL,
-    timeout: 10000,
+    timeout: 180000,
     responseType: 'json'
   }),
 ]
