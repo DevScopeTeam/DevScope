@@ -1,12 +1,12 @@
 # DevScope
 
-DevScope是一个基于 Vue3.js + TypeScript 的前端框架，用于提供 DevScope 的前端界面和用户交互。<br>
+&emsp;&emsp;DevScope是一个基于 Vue3.js + TypeScript 的前端框架，用于提供 DevScope 的前端界面和用户交互。<br>
 
 ## 模块介绍
 
 ### 1. 首页
-首页，由 **项目标题**“DevScope” 、 **搜索区域** 、 **搜索模式切换按钮** 以及 **搜索图标** 组成。<br>
-用户初次进入网页，即可看到普通模式。以下为两种搜索模式的搜索流程：<br>
+&emsp;&emsp;首页，由 **项目标题** “DevScope” 、 **搜索区域** 、 **搜索模式切换按钮** 以及 **搜索图标** 组成。<br>
+&emsp;&emsp;用户初次进入网页，即可看到普通模式。以下为两种搜索模式的搜索流程：<br>
 
 #### 1. 普通模式（根据用户名搜索）
 step1 · 用户在输入框中输入用户名后，点击右侧的搜索图标，前端调用后端api接口，获取该用户的信息，包括基本信息、就职信息（即公司名称）；<br>
@@ -21,12 +21,12 @@ step4 · 随后，跳转到列表详情页。<br>
 
 ### 2. 列表详情页
 #### 1. 页面组成
-页面由列表、具体信息的左右两栏布局实现。<br>
-其中，左侧的列表部分，存放两种搜索模式搜索到的用户排名表，包含各用户的 **排名** 、 **用户名** 、 **开发者技术能力总分** 。<br>
-右侧的具体信息部分，分为 **基本信息** 、 **Talent Rank 图表** 。两部分内容如功能模块图所示。<br>
+&emsp;&emsp;页面由列表、具体信息的左右两栏布局实现。<br>
+&emsp;&emsp;其中，左侧的列表部分，存放两种搜索模式搜索到的用户排名表，包含各用户的 **排名** 、 **用户名** 、 **开发者技术能力总分** 。<br>
+&emsp;&emsp;右侧的具体信息部分，分为 **基本信息** 、 **Talent Rank 图表** 。两部分内容如功能模块图所示。<br>
 
 #### 2. 前端实现
-在OnBeforeMount生命周期中，根据存储在状态管理存储store中的模式字段，分别执行普通模式搜索、领域模式搜索。<br>
+&emsp;&emsp;在OnBeforeMount生命周期中，根据存储在状态管理存储store中的模式字段，分别执行普通模式搜索、领域模式搜索。<br>
 
 ```
 if (searchStore.getSearchMode()) { // 领域模式
@@ -38,7 +38,7 @@ if (searchStore.getSearchMode()) { // 领域模式
 }
 ```
 
-其中，selectUser()函数将调用refreshUserInfo()。在refreshUserInfo()中，先后调用api获取用户的信息（包含领域信息）。最后，通过布尔类型的字段state.reRendering的切换，实现echarts的数据动态渲染。<br>
+&emsp;&emsp;其中，selectUser()函数将调用refreshUserInfo()。在refreshUserInfo()中，先后调用api获取用户的信息（包含领域信息）。最后，通过布尔类型的字段state.reRendering的切换，实现echarts的数据动态渲染。<br>
 
 ```
 state.reRendering = false
@@ -47,12 +47,26 @@ nextTick(() => {
 })
 ```
 
-当用户在列表详情页，点击其他用户时，会调用refreshUserInfo()函数执行上述操作，将用户信息存储到变量中，并将数据展示在页面中。<br>
-对于Echarts展示的图表，是通过将每个类型的图表各自封装为一个组件来实现，这样可以极大改善代码的易读性。<br>
+&emsp;&emsp;当用户在列表详情页，点击其他用户时，会调用refreshUserInfo()函数执行上述操作，将用户信息存储到变量中，并将数据展示在页面中。<br>
+&emsp;&emsp;对于Echarts展示的图表，是通过将每个类型的图表各自封装为一个组件来实现，这样可以极大改善代码的易读性。<br>
+此外，Echarts组件内部包含Element-plus的El-skeleton骨架屏，其代码如下所示：<br>
+```
+<template>
+  <div class="outer_box">
+    <!-- skeleton -->
+    <el-skeleton v-show="state.isLoading" class="skeleton_box" animated>
+      <template #template>
+        <el-skeleton-item variant="image" class="image" />
+      </template>
+    </el-skeleton>
 
+    <div v-show="!state.isLoading" class="echart_box" id="chart" ref="chart"></div>
+  </div>
+</template>
+```
 
 ## 项目所使用技术
-项目使用了如下技术、框架：<br>
+&emsp;&emsp;项目使用了如下技术、框架：<br>
 1. Vite（搭建初始化项目）
 2. Vue3.js + TypeScript（包括TypeScript的interface（对象接口））<br>
 3. Axios（经过封装，用于前后端数据通信）<br>
