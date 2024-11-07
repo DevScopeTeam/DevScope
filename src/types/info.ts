@@ -36,6 +36,7 @@ interface UserInfo {
   privategists?: number;
   totalprivaterepos?: number;
   twofactorauthentication?: boolean;
+  domain?: string;
 }
 
 interface UserInfoResp {
