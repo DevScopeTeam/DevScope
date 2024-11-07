@@ -1,6 +1,6 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import { onBeforeMount, reactive, watch, nextTick } from 'vue'
+import { onBeforeMount, reactive, watch, nextTick, ref, onMounted } from 'vue'
 import { useSearchStore } from '@/stores/searchStore'
 import { useUserStore } from '@/stores/userStore'
 import position from '@/assets/image/position.png'
@@ -19,17 +19,17 @@ import { type DeveloperRank } from '@/types/TalentRank'
 import { api } from '@/api/index'
 import { handleNetworkError } from '@/utils/request/RequestTools'
 import type { UserInfo } from '@/types/info'
-import { ElSkeleton, ElSkeletonItem } from 'element-plus'
 
 /* 使用pinia的数据，实现父子组件通信 */
 const userStore = useUserStore()
-// const searchStore = useSearchStore()
+const searchStore = useSearchStore()
 
 const state = reactive({
   top3List: [] as string[], // 存放top3的排名图标
   arr: [] as string[], // 暂存用户信息
-  reRendering: true // true则显示右边的具体信息
+  reRendering: true, // true则显示右边的具体信息
 })
+const loading = ref(false) // 页面数据加载
 
 // define object class
 class userInfoClass {
@@ -75,6 +75,9 @@ async function refreshUserInfo(username: string) {
 
   const [err2, nation_data] = await api.getNation(username)
   if (err2) handleNetworkError(err2)
+  if (nation_data?.nation) {
+    api_user.location = nation_data.nation;
+  }
   if (api_user.location == "" || api_user.location == "Unknown") {
     api_user.location = "N/A"
   }
@@ -95,18 +98,20 @@ async function refreshUserInfo(username: string) {
   state.reRendering = false
   nextTick(() => {
     state.reRendering = true
+    loading.value = false
   })
-
+  
   return [err2, api_user]
 }
 
 const selectUser = async (user: DeveloperRank) => {
   console.log('user', user)
-
   refreshUserInfo(user.username)
 }
 
 onBeforeMount(async () => {
+  loading.value = true
+
   if (searchStore.getSearchMode()) { // 领域模式
     // 根据领域的talentRankList的第一个元素的username，搜索该用户的基本信息
     selectUser((userStore.getTalentRankList())[0])
@@ -114,7 +119,7 @@ onBeforeMount(async () => {
     const user = allocateMember(JSON.parse(userStore.getUserInfo()))
     refreshUserInfo(user.login)
   }
-  
+
   // 构造top3
   state.top3List.push(top1, top2, top3)
 })
@@ -130,7 +135,6 @@ watch(
     })
   }
 )
-
 </script>
 
 <template>
@@ -140,7 +144,7 @@ watch(
       <div class="list_title">
         TalentRank
       </div>
-      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()" 
+      <div class="list_content" v-for="(item, index) in userStore.getTalentRankList()"
         :key="index" :label="item" :value="item" @click="selectUser(item)">
         <!--排名图标（top 3）-->
         <img class="image" v-if="index < 3" :src="state.top3List[index]" alt=""/>
@@ -153,9 +157,9 @@ watch(
 
     <!-- 主体内容 -->
     <div class="body_box">
-      <div>
+      <div v-loading="loading">
         <!-- info -->
-        <div class="info_box" v-if="state.reRendering">
+        <div class="info_box">
           <div class="base_info">
             <div class="amatar_box">
               <img class="avatar" :src="curUser.avatar_url" alt="" />
@@ -169,42 +173,32 @@ watch(
           <div class="company_info">
             <div class="group_box">
               <img class="icon" :src="position" alt=""/>
-              <el-tooltip :content="curUser.location" placement="bottom" effect="light">
-                <div class="position">{{ curUser.location }}</div>
-              </el-tooltip>
+              <div class="position">{{ curUser.location }}</div>
               <!-- <el-tooltip :content="curUser.location" placement="bottom" effect="light">
                 <div class="location">{{ curUser.location }}</div>
               </el-tooltip> -->
             </div>
             <div class="group_box">
               <img class="icon" :src="company" alt="" />
-              <el-tooltip :content="curUser.company" placement="bottom" effect="light">
-                <div class="company">{{ curUser.company }}</div>
-              </el-tooltip>
+              <div class="company">{{ curUser.company }}</div>
             </div>
           </div>
 
           <div class="link_info">
             <div class="group_box">
               <img class="icon" :src="url" alt="" />
-              <el-tooltip :content="curUser.url" placement="bottom" effect="light">
-                <div class="url">{{ curUser.url }}</div>
-              </el-tooltip>
+              <div class="url">{{ curUser.url }}</div>
             </div>
             <div class="group_box">
               <img class="icon" :src="blog" alt="" />
-              <el-tooltip :content="curUser.blog" placement="bottom" effect="light">
-                <div class="blog">{{ curUser.blog }}</div>
-              </el-tooltip>
+              <div class="blog">{{ curUser.blog }}</div>
             </div>
           </div>
 
           <div class="email_info">
             <div class="group_box">
               <img class="icon" :src="email" alt="" />
-              <el-tooltip :content="curUser.email" placement="bottom" effect="light">
-                <div class="email">{{ curUser.email }}</div>
-              </el-tooltip>
+              <div class="email">{{ curUser.email }}</div>
             </div>
           </div>
 
@@ -279,12 +273,6 @@ watch(
       flex-direction: column;
       justify-content: center;
       align-items: center;
-
-      // // fixed at the top
-      // position: -webkit-sticky;
-      // position: sticky;
-      // top: 0;
-      // z-index: 9999;
     }
 
     .list_content:nth-child(1){
@@ -352,7 +340,7 @@ watch(
 
         padding: 5px;
         margin-top: 10px;
-        
+
         color: rgb(59, 59, 79);
         font-family: TsangerYuYangT_W05_W05;
       }
