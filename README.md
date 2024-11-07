@@ -79,29 +79,29 @@ nextTick(() => {
 ### 1. 系统流程图
 
 <p align="center">
-  <img src="./flowChart.png" alt="系统流程图" style="width:600px;height:400px;" />
+  <img src="./docs/flowChart.png" alt="系统流程图" style="width:600px;height:400px;" />
 </p>
 
 
 ### 2. 功能模块图
 
 <p align="center">
-  <img src="./moduleDiagram.png" alt="功能模块图" style="width:600px;height:600px;" />
+  <img src="./docs/moduleDiagram.png" alt="功能模块图" style="width:500px;height:500px;" />
 </p>
 
 ### 3. 界面效果图
 <p align="center">
   <div>1. 普通模式搜索的效果如下所示：</div>
-  <img src="./interface1.png" alt="界面效果图1" style="width:100%;height:100%;" />
-  <img src="./interface2.png" alt="界面效果图2" style="width:100%;height:100%;" />
-  <img src="./interface3.png" alt="界面效果图3" style="width:100%;height:100%;" />
-  <img src="./interface4.png" alt="界面效果图4" style="width:100%;height:100%;" />
+  <img src="./docs/interface1.png" alt="界面效果图1" style="width:100%;height:100%;" />
+  <img src="./docs/interface2.png" alt="界面效果图2" style="width:100%;height:100%;" />
+  <img src="./docs/interface3.png" alt="界面效果图3" style="width:100%;height:100%;" />
+  <img src="./docs/interface4.png" alt="界面效果图4" style="width:100%;height:100%;" />
   <div>2. 领域模式搜索的效果如下所示：</div>
-  <img src="./interface5.png" alt="界面效果图5" style="width:100%;height:100%;" />
-  <img src="./interface6.png" alt="界面效果图6" style="width:100%;height:100%;" />
-  <img src="./interface7.png" alt="界面效果图7" style="width:100%;height:100%;" />
-  <img src="./interface8.png" alt="界面效果图8" style="width:100%;height:100%;" />
-  <img src="./interface9.png" alt="界面效果图9" style="width:100%;height:100%;" />
+  <img src="./docs/interface5.png" alt="界面效果图5" style="width:100%;height:100%;" />
+  <img src="./docs/interface6.png" alt="界面效果图6" style="width:100%;height:100%;" />
+  <img src="./docs/interface7.png" alt="界面效果图7" style="width:100%;height:100%;" />
+  <img src="./docs/interface8.png" alt="界面效果图8" style="width:100%;height:100%;" />
+  <img src="./docs/interface9.png" alt="界面效果图9" style="width:100%;height:100%;" />
 </p>
 
 
