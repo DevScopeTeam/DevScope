@@ -75,6 +75,9 @@ async function refreshUserInfo(username: string) {
 
   const [err2, nation_data] = await api.getNation(username)
   if (err2) handleNetworkError(err2)
+  if (nation_data?.nation) {
+    api_user.location = nation_data.nation;
+  }
   if (api_user.location == "" || api_user.location == "Unknown") {
     api_user.location = "N/A"
   }
